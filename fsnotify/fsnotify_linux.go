@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"saturn/common/zlog"
 	"strconv"
 
 	"golang.org/x/sys/unix"
@@ -58,8 +57,6 @@ func (w *Watcher) Wait() (Event, error) {
 	if err = binary.Read(w.rwb_, binary.LittleEndian, &metaData); err != nil {
 		return event, fmt.Errorf("fanotify read event error: %w", err)
 	}
-
-	zlog.Info("new notify........", metaData.Vers)
 
 	if metaData.Vers != unix.FANOTIFY_METADATA_VERSION {
 		if err = unix.Close(int(metaData.Fd)); err != nil {
