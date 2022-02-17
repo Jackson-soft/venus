@@ -1,62 +1,46 @@
 package standard_test
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/Jackson-soft/venus/standard"
-	"github.com/stretchr/testify/assert"
+
+	. "github.com/onsi/ginkgo/v2"
+
+	. "github.com/onsi/gomega"
 )
 
-func TestQueue(t *testing.T) {
-	q := standard.NewQueue()
-	q.Push(1)
-	assert.Equal(t, q.Size(), uint(1))
-	q.Push(2)
-	assert.Equal(t, q.Size(), uint(2))
-	q.Push(3)
-	assert.Equal(t, q.Size(), uint(3))
+var _ = Describe("test queue", func() {
+	queue := standard.NewQueue()
+	Context("test push", func() {
+		It("queue", func() {
+			queue.Push(1)
+			Expect(queue.Size()).Should(Equal(uint(1)))
 
-	assert.Equal(t, q.Pop(), 1)
-	assert.Equal(t, q.Size(), uint(2))
-	assert.Equal(t, q.Pop(), 2)
-	assert.Equal(t, q.Size(), uint(1))
-	assert.Equal(t, q.Pop(), 3)
-	assert.Equal(t, q.Size(), uint(0))
-	assert.Equal(t, q.Pop(), nil)
-	assert.Equal(t, q.Size(), uint(0))
+			queue.Push(2)
+			Expect(queue.Size()).Should(Equal(uint(2)))
 
-	assert.Equal(t, q.Pop(), nil)
+			queue.Push(3)
+			Expect(queue.Size()).Should(Equal(uint(3)))
+		})
+	})
 
-	q.Push(4)
-	assert.Equal(t, q.Size(), uint(1))
-	assert.Equal(t, q.Pop(), 4)
-}
+	Context("test pop", func() {
+		It("pop", func() {
+			v := queue.Pop()
+			Expect(queue.Size()).Should(Equal(uint(2)))
+			Expect(v).Should(Equal(1))
 
-func TestQueue2(t *testing.T) {
-	q := standard.NewQueue()
+			v = queue.Pop()
+			Expect(queue.Size()).Should(Equal(uint(1)))
+			Expect(v).Should(Equal(2))
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	total := 1000
-
-	go func() {
-		for i := 0; i < total; i++ {
-			q.Push(i)
-		}
-	}()
-
-	go func() {
-		for i := 0; i < total; i++ {
-			q.Pop()
-		}
-	}()
-
-	wg.Done()
-
-	t.Log(q.Size())
-}
+			v = queue.Pop()
+			Expect(queue.Size()).Should(Equal(uint(0)))
+			Expect(v).Should(Equal(3))
+		})
+	})
+})
 
 func BenchmarkQueue2(b *testing.B) {
 	q := standard.NewQueue()

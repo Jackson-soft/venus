@@ -1,38 +1,32 @@
 package standard_test
 
 import (
-	"testing"
-
 	"github.com/Jackson-soft/venus/standard"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/ginkgo/v2"
+
+	. "github.com/onsi/gomega"
 )
 
-func TestNew(t *testing.T) {
+var _ = Describe("test set", func() {
 	s := standard.NewSet()
-	assert.NotNil(t, s)
 
-	aa := s.List()
-	t.Log(aa)
+	It("test", func() {
+		aa := s.List()
 
-	assert.True(t, s.Empty())
+		Expect(len(aa)).Should(Equal(0))
 
-	s.Insert("e")
-	assert.Equal(t, s.Size(), 1)
-	assert.False(t, s.Empty())
+		s.Insert("e")
 
-	s.Insert("b")
-	assert.Equal(t, s.Size(), 2)
+		s.Insert("b")
 
-	array := s.List()
-	assert.Equal(t, s.Size(), len(array))
-	t.Log(array)
+		array := s.List()
+		Expect(len(array)).Should(Equal(2))
 
-	sarray := s.SortList()
-	t.Log(sarray)
+		// sarray := s.SortList()
 
-	s.Erase("b")
-	assert.Equal(t, s.Size(), 1)
+		s.Erase("b")
 
-	s.Clear()
-	assert.True(t, s.Empty())
-}
+		s.Clear()
+		Expect(s.Empty()).Should(BeTrue())
+	})
+})

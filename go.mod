@@ -3,12 +3,14 @@ module github.com/Jackson-soft/venus
 go 1.17
 
 require (
-	github.com/stretchr/testify v1.7.0
-	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
+	github.com/go-sql-driver/mysql v1.6.0
+	github.com/onsi/ginkgo/v2 v2.1.3
+	github.com/onsi/gomega v1.18.1
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
+	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
+	golang.org/x/text v0.3.6 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
