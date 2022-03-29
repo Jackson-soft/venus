@@ -5,20 +5,20 @@ import (
 )
 
 // 多线程队列
-type Queue struct {
+type Queue[T any] struct {
 	mutex_ sync.RWMutex
-	size_  uint  // 容量
-	head_  *node // 队头
-	tail_  *node // 队尾
+	size_  uint     // 容量
+	head_  *node[T] // 队头
+	tail_  *node[T] // 队尾
 }
 
-type node struct {
-	value_ interface{}
-	next_  *node
+type node[T any] struct {
+	value_ T
+	next_  *node[T]
 }
 
-func NewQueue() *Queue {
-	return &Queue{
+func NewQueue[T any]() *Queue[T] {
+	return &Queue[T]{
 		size_: 0,
 		head_: nil,
 		tail_: nil,
@@ -26,8 +26,8 @@ func NewQueue() *Queue {
 }
 
 // 插入
-func (q *Queue) Push(v interface{}) {
-	n := &node{
+func (q *Queue[T]) Push(v T) {
+	n := &node[T]{
 		value_: v,
 		next_:  nil,
 	}
@@ -44,7 +44,7 @@ func (q *Queue) Push(v interface{}) {
 }
 
 // 弹出
-func (q *Queue) Pop() interface{} {
+func (q *Queue[T]) Pop() any {
 	q.mutex_.Lock()
 	defer q.mutex_.Unlock()
 
@@ -59,7 +59,7 @@ func (q *Queue) Pop() interface{} {
 	return n.value_
 }
 
-func (q *Queue) Size() uint {
+func (q *Queue[T]) Size() uint {
 	q.mutex_.RLock()
 	defer q.mutex_.RUnlock()
 	return q.size_

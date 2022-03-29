@@ -1,67 +1,73 @@
 package standard
 
 import (
-	"sort"
 	"sync"
 )
 
 // 不重复切片
-type Set struct {
-	sync.RWMutex
-	m_ map[string]struct{}
+type Set[T comparable] struct {
+	mutex_ sync.RWMutex
+	m_     map[T]struct{}
 }
 
-func NewSet() *Set {
-	return &Set{
-		m_: make(map[string]struct{}),
+func NewSet[T comparable]() *Set[T] {
+	return &Set[T]{
+		mutex_: sync.RWMutex{},
+		m_:     make(map[T]struct{}),
 	}
 }
 
-func (s *Set) Insert(key string) {
-	s.Lock()
+func (s *Set[T]) Insert(key T) {
+	s.mutex_.Lock()
 	s.m_[key] = struct{}{}
-	s.Unlock()
+	s.mutex_.Unlock()
 }
 
-func (s *Set) Erase(key string) {
-	s.Lock()
+func (s *Set[T]) Erase(key T) {
+	s.mutex_.Lock()
 	delete(s.m_, key)
-	s.Unlock()
+	s.mutex_.Unlock()
 }
 
-func (s *Set) Has(key string) bool {
-	s.RLock()
-	defer s.RUnlock()
+func (s *Set[T]) Has(key T) bool {
+	s.mutex_.RLock()
+	defer s.mutex_.RUnlock()
 	_, ok := s.m_[key]
 	return ok
 }
 
-func (s *Set) Size() int {
+func (s *Set[T]) Size() int {
+	s.mutex_.RLock()
+	defer s.mutex_.RUnlock()
 	return len(s.m_)
 }
 
-func (s *Set) Empty() bool {
+func (s *Set[T]) Empty() bool {
+	s.mutex_.RLock()
+	defer s.mutex_.RUnlock()
 	return s.Size() == 0
 }
 
-func (s *Set) Clear() {
-	s.Lock()
-	s.m_ = make(map[string]struct{})
-	s.Unlock()
+func (s *Set[T]) Clear() {
+	s.mutex_.Lock()
+	s.m_ = make(map[T]struct{})
+	s.mutex_.Unlock()
 }
 
-func (s *Set) List() []string {
-	s.RLock()
-	defer s.RUnlock()
-	list := make([]string, 0, s.Size())
+func (s *Set[T]) List() []T {
+	s.mutex_.RLock()
+	defer s.mutex_.RUnlock()
+	list := make([]T, 0, s.Size())
 	for i := range s.m_ {
 		list = append(list, i)
 	}
 	return list
 }
 
-func (s *Set) SortList() []string {
+/*
+func (s *Set[T]) SortList() []T {
 	list := s.List()
 	sort.Strings(list)
 	return list
 }
+*/

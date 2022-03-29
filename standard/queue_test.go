@@ -11,7 +11,7 @@ import (
 )
 
 var _ = Describe("test queue", func() {
-	queue := standard.NewQueue()
+	queue := standard.NewQueue[int]()
 	Context("test push", func() {
 		It("queue", func() {
 			queue.Push(1)
@@ -43,7 +43,7 @@ var _ = Describe("test queue", func() {
 })
 
 func BenchmarkQueue2(b *testing.B) {
-	q := standard.NewQueue()
+	q := standard.NewQueue[int]()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			q.Push(3)
@@ -58,7 +58,7 @@ func BenchmarkQueue2(b *testing.B) {
 }
 
 func BenchmarkQueue(b *testing.B) {
-	q := standard.NewQueue()
+	q := standard.NewQueue[int]()
 	for i := 0; i < b.N; i++ {
 		q.Push(i)
 	}
