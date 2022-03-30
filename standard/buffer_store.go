@@ -1,6 +1,7 @@
 package standard
 
 import (
+	"errors"
 	"math/bits"
 	"sync"
 )
@@ -34,12 +35,12 @@ type Pool struct {
 // New returns Pool which has buckets from minSize to maxSize.
 // Buckets increase with the power of two, i.e with multiplier 2: [2b, 4b, 16b, ... , 1024b]
 // Last pool will always be capped to maxSize.
-func NewBufferStore(minSize, maxSize int) *Pool {
+func NewBufferStore(minSize, maxSize int) (*Pool, error) {
 	if maxSize < minSize {
-		panic("maxSize can't be less than minSize")
+		return nil, errors.New("maxSize can't be less than minSize")
 	}
 	const multiplier = 2
-	var pools []*sizedPool
+	pools := make([]*sizedPool, 0)
 	curSize := minSize
 	for curSize < maxSize {
 		pools = append(pools, newSizedPool(curSize))
@@ -50,7 +51,7 @@ func NewBufferStore(minSize, maxSize int) *Pool {
 		minSize: minSize,
 		maxSize: maxSize,
 		pools:   pools,
-	}
+	}, nil
 }
 
 func (p *Pool) findPool(size int) *sizedPool {
