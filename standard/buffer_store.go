@@ -10,6 +10,10 @@ import (
    内存池
 */
 
+var (
+	ErrSize = errors.New("maxSize can't be less than minSize")
+)
+
 type sizedPool struct {
 	size int
 	pool sync.Pool
@@ -37,7 +41,7 @@ type Pool struct {
 // Last pool will always be capped to maxSize.
 func NewBufferStore(minSize, maxSize int) (*Pool, error) {
 	if maxSize < minSize {
-		return nil, errors.New("maxSize can't be less than minSize")
+		return nil, ErrSize
 	}
 	const multiplier = 2
 	pools := make([]*sizedPool, 0)
@@ -73,7 +77,10 @@ func (p *Pool) Get(size int) *[]byte {
 	if sp == nil {
 		return makeSlicePointer(size)
 	}
-	buf := sp.pool.Get().(*[]byte)
+	buf, ok := sp.pool.Get().(*[]byte)
+	if !ok {
+		return makeSlicePointer(size)
+	}
 	*buf = (*buf)[:size]
 	return buf
 }

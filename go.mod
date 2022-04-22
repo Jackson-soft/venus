@@ -6,8 +6,8 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.19.0
-	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
-	golang.org/x/sys v0.0.0-20220328115105-d36c6a25d886
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
 )
 
 require (
