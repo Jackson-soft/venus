@@ -11,10 +11,13 @@ var _ = Describe("RingBuffer", func() {
 	Context("one", func() {
 		It("ring buffer", func() {
 			buf := standard.NewRingBuf[int](5)
+			Expect(buf.Size()).Should(Equal(0))
 			data := 3
 			buf.Push(data)
+			Expect(buf.Size()).Should(Equal(1))
 
 			Expect(buf.Pop()).Should(Equal(data))
+			Expect(buf.Size()).Should(Equal(0))
 		})
 	})
 

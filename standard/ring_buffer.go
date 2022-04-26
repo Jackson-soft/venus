@@ -36,6 +36,11 @@ func (r *RingBuffer[T]) Pop() T {
 	return data
 }
 
+// 实际容纳的数据量
 func (r *RingBuffer[T]) Size() int {
 	return (r.write_ - r.read_ + r.size_) % r.size_
+}
+
+func (r *RingBuffer[T]) IsFull() bool {
+	return r.read_ == r.write_
 }
