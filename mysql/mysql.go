@@ -49,13 +49,12 @@ func (m *MySQL) GetConn() *sql.DB {
 func (m *MySQL) BeginTx() (*Tx, error) {
 	tx, err := m.conn_.Begin()
 	if err != nil {
-		tx.Rollback()
 		return nil, err
 	}
 	return &Tx{tx_: tx, hasError_: false}, nil
 }
 
-func (m *MySQL) Insert(query string, args ...interface{}) (int64, error) {
+func (m *MySQL) Insert(query string, args ...any) (int64, error) {
 	stmt, err := m.conn_.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -69,7 +68,7 @@ func (m *MySQL) Insert(query string, args ...interface{}) (int64, error) {
 	return res.LastInsertId()
 }
 
-func (m *MySQL) InsertContext(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (m *MySQL) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
 	stmt, err := m.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
@@ -83,7 +82,7 @@ func (m *MySQL) InsertContext(ctx context.Context, query string, args ...interfa
 	return res.LastInsertId()
 }
 
-func (m *MySQL) Delete(query string, args ...interface{}) (int64, error) {
+func (m *MySQL) Delete(query string, args ...any) (int64, error) {
 	stmt, err := m.conn_.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -97,7 +96,7 @@ func (m *MySQL) Delete(query string, args ...interface{}) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (m *MySQL) Update(query string, args ...interface{}) (int64, error) {
+func (m *MySQL) Update(query string, args ...any) (int64, error) {
 	stmt, err := m.conn_.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -111,7 +110,7 @@ func (m *MySQL) Update(query string, args ...interface{}) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (m *MySQL) UpdateContext(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (m *MySQL) UpdateContext(ctx context.Context, query string, args ...any) (int64, error) {
 	stmt, err := m.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
@@ -125,7 +124,7 @@ func (m *MySQL) UpdateContext(ctx context.Context, query string, args ...interfa
 	return res.RowsAffected()
 }
 
-func (m *MySQL) QueryForMap(query string, args ...interface{}) (map[string]interface{}, error) {
+func (m *MySQL) QueryForMap(query string, args ...any) (map[string]any, error) {
 	stmt, err := m.conn_.Prepare(query)
 	if err != nil {
 		return nil, err
@@ -143,14 +142,14 @@ func (m *MySQL) QueryForMap(query string, args ...interface{}) (map[string]inter
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	result := make(map[string]interface{}, len(cols))
+	result := make(map[string]any, len(cols))
 
 	if rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
@@ -176,7 +175,7 @@ func (m *MySQL) QueryForMap(query string, args ...interface{}) (map[string]inter
 	return result, nil
 }
 
-func (m *MySQL) QueryMapContext(ctx context.Context, query string, args ...interface{}) (map[string]interface{}, error) {
+func (m *MySQL) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
 	stmt, err := m.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -194,14 +193,14 @@ func (m *MySQL) QueryMapContext(ctx context.Context, query string, args ...inter
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	result := make(map[string]interface{}, len(cols))
+	result := make(map[string]any, len(cols))
 
 	if rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
@@ -227,7 +226,7 @@ func (m *MySQL) QueryMapContext(ctx context.Context, query string, args ...inter
 	return result, nil
 }
 
-func (m *MySQL) QueryForMapSlice(query string, args ...interface{}) ([]map[string]interface{}, error) {
+func (m *MySQL) QueryForMapSlice(query string, args ...any) ([]map[string]any, error) {
 	stmt, err := m.conn_.Prepare(query)
 	if err != nil {
 		return nil, err
@@ -245,19 +244,19 @@ func (m *MySQL) QueryForMapSlice(query string, args ...interface{}) ([]map[strin
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	results := make([]map[string]interface{}, 0)
+	results := make([]map[string]any, 0)
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			return nil, err
 		}
-		result := make(map[string]interface{}, len(cols))
+		result := make(map[string]any, len(cols))
 		for ii, key := range cols {
 			if scanArgs[ii] == nil {
 				continue
@@ -279,7 +278,7 @@ func (m *MySQL) QueryForMapSlice(query string, args ...interface{}) ([]map[strin
 	return results, nil
 }
 
-func (m *MySQL) QueryMapSliceContext(ctx context.Context, query string, args ...interface{}) ([]map[string]interface{}, error) {
+func (m *MySQL) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
 	stmt, err := m.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -297,19 +296,19 @@ func (m *MySQL) QueryMapSliceContext(ctx context.Context, query string, args ...
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	results := make([]map[string]interface{}, 0)
+	results := make([]map[string]any, 0)
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			return nil, err
 		}
-		result := make(map[string]interface{}, len(cols))
+		result := make(map[string]any, len(cols))
 		for ii, key := range cols {
 			if scanArgs[ii] == nil {
 				continue
