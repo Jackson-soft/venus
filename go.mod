@@ -5,13 +5,14 @@ go 1.18
 require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/onsi/ginkgo/v2 v2.1.4
-	github.com/onsi/gomega v1.19.0
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
+	github.com/onsi/gomega v1.20.1
+	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d
+	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64
 )
 
 require (
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

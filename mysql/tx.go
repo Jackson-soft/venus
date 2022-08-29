@@ -26,7 +26,7 @@ func (t *Tx) HasError() {
 	t.hasError_ = true
 }
 
-func (t *Tx) Insert(query string, args ...interface{}) (int64, error) {
+func (t *Tx) Insert(query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -40,7 +40,7 @@ func (t *Tx) Insert(query string, args ...interface{}) (int64, error) {
 	return res.LastInsertId()
 }
 
-func (t *Tx) InsertContext(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (t *Tx) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
@@ -54,7 +54,7 @@ func (t *Tx) InsertContext(ctx context.Context, query string, args ...interface{
 	return res.LastInsertId()
 }
 
-func (t *Tx) Delete(query string, args ...interface{}) (int64, error) {
+func (t *Tx) Delete(query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -68,7 +68,7 @@ func (t *Tx) Delete(query string, args ...interface{}) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (t *Tx) DeleteContext(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (t *Tx) DeleteContext(ctx context.Context, query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
@@ -82,7 +82,7 @@ func (t *Tx) DeleteContext(ctx context.Context, query string, args ...interface{
 	return res.RowsAffected()
 }
 
-func (t *Tx) Update(query string, args ...interface{}) (int64, error) {
+func (t *Tx) Update(query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -96,7 +96,7 @@ func (t *Tx) Update(query string, args ...interface{}) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (t *Tx) UpdateContext(ctx context.Context, query string, args ...interface{}) (int64, error) {
+func (t *Tx) UpdateContext(ctx context.Context, query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
@@ -110,7 +110,7 @@ func (t *Tx) UpdateContext(ctx context.Context, query string, args ...interface{
 	return res.RowsAffected()
 }
 
-func (t *Tx) QueryForMap(query string, args ...interface{}) (map[string]interface{}, error) {
+func (t *Tx) QueryForMap(query string, args ...any) (map[string]any, error) {
 	stmt, err := t.tx_.Prepare(query)
 	if err != nil {
 		return nil, err
@@ -130,14 +130,14 @@ func (t *Tx) QueryForMap(query string, args ...interface{}) (map[string]interfac
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	result := make(map[string]interface{}, len(cols))
+	result := make(map[string]any, len(cols))
 
 	if rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
@@ -162,7 +162,7 @@ func (t *Tx) QueryForMap(query string, args ...interface{}) (map[string]interfac
 	return result, nil
 }
 
-func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...interface{}) (map[string]interface{}, error) {
+func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -182,14 +182,14 @@ func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...interfac
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	result := make(map[string]interface{}, len(cols))
+	result := make(map[string]any, len(cols))
 
 	if rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
@@ -214,7 +214,7 @@ func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...interfac
 	return result, nil
 }
 
-func (t *Tx) QueryForMapSlice(query string, args ...interface{}) ([]map[string]interface{}, error) {
+func (t *Tx) QueryForMapSlice(query string, args ...any) ([]map[string]any, error) {
 	stmt, err := t.tx_.Prepare(query)
 	if err != nil {
 		return nil, err
@@ -232,19 +232,19 @@ func (t *Tx) QueryForMapSlice(query string, args ...interface{}) ([]map[string]i
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	var results []map[string]interface{}
+	var results []map[string]any
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			return nil, err
 		}
-		result := make(map[string]interface{}, len(cols))
+		result := make(map[string]any, len(cols))
 		for ii, key := range cols {
 			if scanArgs[ii] == nil {
 				continue
@@ -266,7 +266,7 @@ func (t *Tx) QueryForMapSlice(query string, args ...interface{}) ([]map[string]i
 	return results, nil
 }
 
-func (t *Tx) QueryMapSliceContext(ctx context.Context, query string, args ...interface{}) ([]map[string]interface{}, error) {
+func (t *Tx) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -284,19 +284,19 @@ func (t *Tx) QueryMapSliceContext(ctx context.Context, query string, args ...int
 		return nil, err
 	}
 
-	values := make([]interface{}, len(cols))
+	values := make([]any, len(cols))
 
-	scanArgs := make([]interface{}, len(values))
+	scanArgs := make([]any, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
 
-	var results []map[string]interface{}
+	var results []map[string]any
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			return nil, err
 		}
-		result := make(map[string]interface{}, len(cols))
+		result := make(map[string]any, len(cols))
 		for ii, key := range cols {
 			if scanArgs[ii] == nil {
 				continue
