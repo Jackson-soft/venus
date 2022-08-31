@@ -40,6 +40,17 @@ func (m *Map[K, V]) Find(key K) (any, bool) {
 	return v, ok
 }
 
+func (m *Map[K, V]) Range(f func(key K, value V) bool) {
+	m.mutex_.RLock()
+	defer m.mutex_.RUnlock()
+
+	for k, v := range m.value_ {
+		if !f(k, v) {
+			break
+		}
+	}
+}
+
 func (m *Map[K, V]) Erase(key K) {
 	m.mutex_.Lock()
 	delete(m.value_, key)

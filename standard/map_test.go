@@ -1,6 +1,8 @@
 package standard_test
 
 import (
+	"fmt"
+
 	"github.com/Jackson-soft/venus/standard"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -40,6 +42,19 @@ var _ = Describe("Map", func() {
 			vv, ok = mm.Find(222)
 			Expect(ok).ShouldNot(BeTrue())
 			Expect(vv).Should(Equal(int64(0)))
+		})
+
+		It("range", func() {
+			mm := standard.NewMap[int64, int64]()
+
+			mm.Insert(43, 666)
+			Expect(mm.Size()).Should(Equal(1))
+			mm.Insert(2, 55)
+
+			mm.Range(func(key, value int64) bool {
+				fmt.Println(key, value)
+				return true
+			})
 		})
 	})
 })
