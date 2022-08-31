@@ -26,5 +26,20 @@ var _ = Describe("Map", func() {
 			mm.Erase(43)
 			Expect(mm.Size()).Should(Equal(0))
 		})
+
+		It("find", func() {
+			mm := standard.NewMap[int64, int64]()
+
+			mm.Insert(43, 666)
+			Expect(mm.Size()).Should(Equal(1))
+
+			vv, ok := mm.Find(43)
+			Expect(ok).Should(BeTrue())
+			Expect(vv).Should(Equal(int64(666)))
+
+			vv, ok = mm.Find(222)
+			Expect(ok).ShouldNot(BeTrue())
+			Expect(vv).Should(Equal(int64(0)))
+		})
 	})
 })
