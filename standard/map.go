@@ -33,7 +33,7 @@ func (m *Map[K, V]) Insert(key K, value V) {
 	m.mutex_.Unlock()
 }
 
-func (m *Map[K, V]) Find(key K) (any, bool) {
+func (m *Map[K, V]) Find(key K) (V, bool) {
 	m.mutex_.RLock()
 	v, ok := m.value_[key]
 	m.mutex_.RUnlock()
