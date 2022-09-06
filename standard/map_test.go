@@ -2,6 +2,7 @@ package standard_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/Jackson-soft/venus/standard"
 	. "github.com/onsi/ginkgo/v2"
@@ -58,3 +59,11 @@ var _ = Describe("Map", func() {
 		})
 	})
 })
+
+func BenchmarkInsert(b *testing.B) {
+	mm := standard.NewMap[int, int]()
+
+	for i := 0; i < b.N; i++ {
+		mm.Insert(i, i)
+	}
+}

@@ -10,8 +10,8 @@ type Set[T comparable] struct {
 	m_     map[T]struct{}
 }
 
-func NewSet[T comparable]() *Set[T] {
-	return &Set[T]{
+func NewSet[T comparable]() Set[T] {
+	return Set[T]{
 		mutex_: sync.RWMutex{},
 		m_:     make(map[T]struct{}),
 	}

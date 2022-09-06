@@ -46,6 +46,11 @@ func (m *MySQL) GetConn() *sql.DB {
 	return m.conn_
 }
 
+func (m *MySQL) Reset(dsn string, db *sql.DB) {
+	m.conn_ = db
+	m.dsn_ = dsn
+}
+
 func (m *MySQL) BeginTx() (*Tx, error) {
 	tx, err := m.conn_.Begin()
 	if err != nil {
