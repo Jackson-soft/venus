@@ -35,8 +35,8 @@ func (m *Map[K, V]) Insert(key K, value V) {
 
 func (m *Map[K, V]) Find(key K) (V, bool) {
 	m.mutex_.RLock()
+	defer m.mutex_.RUnlock()
 	v, ok := m.value_[key]
-	m.mutex_.RUnlock()
 	return v, ok
 }
 
