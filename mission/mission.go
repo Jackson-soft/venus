@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+// 简单的异步队列
+
 // 消息总线
 type EventBus struct {
 	taskQueue_ chan *Task // 任务队列
@@ -33,7 +35,9 @@ func Instance() *EventBus {
 func create() *EventBus {
 	eb := &EventBus{
 		taskQueue_: make(chan *Task, 8),
-		taskPool_:  sync.Pool{New: func() any { return new(Task) }},
+		taskPool_: sync.Pool{
+			New: func() any { return new(Task) },
+		},
 	}
 
 	go eb.run()

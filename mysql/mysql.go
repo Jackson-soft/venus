@@ -14,7 +14,7 @@ type MySQL struct {
 }
 
 func NewMySQL() *MySQL {
-	return &MySQL{}
+	return new(MySQL)
 }
 
 func (m *MySQL) Open(dsn string, ops ...Option) error {
@@ -56,7 +56,10 @@ func (m *MySQL) BeginTx() (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Tx{tx_: tx, hasError_: false}, nil
+	return &Tx{
+		tx_:       tx,
+		hasError_: false,
+	}, nil
 }
 
 func (m *MySQL) Insert(query string, args ...any) (int64, error) {
