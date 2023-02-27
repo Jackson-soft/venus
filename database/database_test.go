@@ -1,4 +1,4 @@
-package mysql_test
+package database_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"

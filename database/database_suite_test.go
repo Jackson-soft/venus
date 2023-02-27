@@ -1,14 +1,15 @@
-package mysql_test
+package database_test
 
 import (
 	"testing"
 
-	"github.com/Jackson-soft/venus/mysql"
+	"github.com/Jackson-soft/venus/database"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
-var db *mysql.MySQL
+var db *database.Database
 
 func TestMysql(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -17,10 +18,10 @@ func TestMysql(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	dsn := "root:ruisi_112@tcp(127.0.0.1:3306)/ruisi"
-	db = mysql.NewMySQL()
-
-	err := db.Open(dsn)
+	var err error
+	db, err = database.OpenDB("mysql", dsn)
 	Expect(err).ShouldNot(HaveOccurred())
+	Expect(db).ShouldNot(BeNil())
 })
 
 var _ = AfterSuite(func() {
