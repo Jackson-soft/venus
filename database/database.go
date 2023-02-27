@@ -1,58 +1,60 @@
-package mysql
+package database
 
 import (
 	"context"
 	"database/sql"
 	"reflect"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
-type MySQL struct {
+// 标准库的数据库简单封装
+
+type Database struct {
 	conn_ *sql.DB
+	name_ string
 	dsn_  string
 }
 
-func NewMySQL() *MySQL {
-	return new(MySQL)
-}
-
-func (m *MySQL) Open(dsn string, ops ...Option) error {
-	m.dsn_ = dsn
-	conn, err := sql.Open("mysql", dsn)
+func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
+	conn, err := sql.Open(driverName, dsn)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.conn_ = conn
+	database := &Database{
+		conn_: conn,
+		name_: driverName,
+		dsn_:  dsn,
+	}
 
 	if len(ops) > 0 {
 		for _, op := range ops {
-			op(m)
+			op(database)
 		}
 	}
-	return nil
+	return database, nil
 }
 
-func (m *MySQL) Ping(ctx context.Context) error {
-	return m.conn_.PingContext(ctx)
+func (d *Database) Ping(ctx context.Context) error {
+	return d.conn_.PingContext(ctx)
 }
 
-func (m *MySQL) Close() error {
-	err := m.conn_.Close()
-	return err
+func (d *Database) Close() error {
+	return d.conn_.Close()
 }
 
-func (m *MySQL) GetConn() *sql.DB {
-	return m.conn_
+func (d *Database) Client() *sql.DB {
+	return d.conn_
 }
 
-func (m *MySQL) Reset(dsn string, db *sql.DB) {
-	m.conn_ = db
-	m.dsn_ = dsn
+func (d *Database) Reset(db *sql.DB, dsn string) {
+	if db == nil {
+		return
+	}
+	d.conn_ = db
+	d.dsn_ = dsn
 }
 
-func (m *MySQL) BeginTx() (*Tx, error) {
-	tx, err := m.conn_.Begin()
+func (d *Database) BeginTx() (*Tx, error) {
+	tx, err := d.conn_.Begin()
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +64,8 @@ func (m *MySQL) BeginTx() (*Tx, error) {
 	}, nil
 }
 
-func (m *MySQL) Insert(query string, args ...any) (int64, error) {
-	stmt, err := m.conn_.Prepare(query)
+func (d *Database) Insert(query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
 		return -1, err
 	}
@@ -76,8 +78,8 @@ func (m *MySQL) Insert(query string, args ...any) (int64, error) {
 	return res.LastInsertId()
 }
 
-func (m *MySQL) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := m.conn_.PrepareContext(ctx, query)
+func (d *Database) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
 	}
@@ -90,8 +92,8 @@ func (m *MySQL) InsertContext(ctx context.Context, query string, args ...any) (i
 	return res.LastInsertId()
 }
 
-func (m *MySQL) Delete(query string, args ...any) (int64, error) {
-	stmt, err := m.conn_.Prepare(query)
+func (d *Database) Delete(query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
 		return -1, err
 	}
@@ -104,8 +106,8 @@ func (m *MySQL) Delete(query string, args ...any) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (m *MySQL) Update(query string, args ...any) (int64, error) {
-	stmt, err := m.conn_.Prepare(query)
+func (d *Database) Update(query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
 		return -1, err
 	}
@@ -118,8 +120,8 @@ func (m *MySQL) Update(query string, args ...any) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (m *MySQL) UpdateContext(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := m.conn_.PrepareContext(ctx, query)
+func (d *Database) UpdateContext(ctx context.Context, query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return -1, err
 	}
@@ -132,8 +134,8 @@ func (m *MySQL) UpdateContext(ctx context.Context, query string, args ...any) (i
 	return res.RowsAffected()
 }
 
-func (m *MySQL) QueryForMap(query string, args ...any) (map[string]any, error) {
-	stmt, err := m.conn_.Prepare(query)
+func (d *Database) QueryForMap(query string, args ...any) (map[string]any, error) {
+	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
 		return nil, err
 	}
@@ -183,8 +185,8 @@ func (m *MySQL) QueryForMap(query string, args ...any) (map[string]any, error) {
 	return result, nil
 }
 
-func (m *MySQL) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
-	stmt, err := m.conn_.PrepareContext(ctx, query)
+func (d *Database) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
+	stmt, err := d.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -234,8 +236,8 @@ func (m *MySQL) QueryMapContext(ctx context.Context, query string, args ...any) 
 	return result, nil
 }
 
-func (m *MySQL) QueryForMapSlice(query string, args ...any) ([]map[string]any, error) {
-	stmt, err := m.conn_.Prepare(query)
+func (d *Database) QueryForMapSlice(query string, args ...any) ([]map[string]any, error) {
+	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
 		return nil, err
 	}
@@ -286,8 +288,8 @@ func (m *MySQL) QueryForMapSlice(query string, args ...any) ([]map[string]any, e
 	return results, nil
 }
 
-func (m *MySQL) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
-	stmt, err := m.conn_.PrepareContext(ctx, query)
+func (d *Database) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
+	stmt, err := d.conn_.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
