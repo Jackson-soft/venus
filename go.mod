@@ -3,7 +3,7 @@ module github.com/Jackson-soft/venus
 go 1.19
 
 require (
-	github.com/onsi/ginkgo/v2 v2.8.3
+	github.com/onsi/ginkgo/v2 v2.8.4
 	github.com/onsi/gomega v1.27.1
 	golang.org/x/crypto v0.6.0
 	golang.org/x/sys v0.5.0

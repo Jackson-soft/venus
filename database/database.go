@@ -64,6 +64,17 @@ func (d *Database) BeginTx() (*Tx, error) {
 	}, nil
 }
 
+func (d *Database) BeginTxCtx(ctx context.Context) (*Tx, error) {
+	tx, err := d.conn_.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &Tx{
+		tx_:       tx,
+		hasError_: false,
+	}, nil
+}
+
 func (d *Database) Insert(query string, args ...any) (int64, error) {
 	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
