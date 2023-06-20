@@ -44,19 +44,20 @@ func (q *Queue[T]) Push(v T) {
 }
 
 // 弹出
-func (q *Queue[T]) Pop() any {
+func (q *Queue[T]) Pop() (T, bool) {
 	q.mutex_.Lock()
 	defer q.mutex_.Unlock()
 
+	var value T
 	if q.size_ == 0 {
-		return nil
+		return value, false
 	}
 
 	n := q.head_
 	q.head_ = n.next_
 
 	q.size_--
-	return n.value_
+	return n.value_, true
 }
 
 func (q *Queue[T]) Size() uint {

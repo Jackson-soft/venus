@@ -27,17 +27,20 @@ var _ = Describe("test queue", func() {
 
 	Context("test pop", func() {
 		It("pop", func() {
-			v := queue.Pop()
+			v, ok := queue.Pop()
 			Expect(queue.Size()).Should(Equal(uint(2)))
 			Expect(v).Should(Equal(1))
+			Expect(ok).Should(BeTrue())
 
-			v = queue.Pop()
+			v, ok = queue.Pop()
 			Expect(queue.Size()).Should(Equal(uint(1)))
 			Expect(v).Should(Equal(2))
+			Expect(ok).Should(BeTrue())
 
-			v = queue.Pop()
+			v, ok = queue.Pop()
 			Expect(queue.Size()).Should(Equal(uint(0)))
 			Expect(v).Should(Equal(3))
+			Expect(ok).Should(BeTrue())
 		})
 	})
 })
