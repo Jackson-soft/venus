@@ -33,6 +33,14 @@ func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
 	return database, nil
 }
 
+func NewDB(driverName string, db *sql.DB) *Database {
+	client := new(Database)
+	client.conn_ = db
+	client.name_ = driverName
+
+	return client
+}
+
 func (d *Database) Ping(ctx context.Context) error {
 	return d.conn_.PingContext(ctx)
 }

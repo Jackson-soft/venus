@@ -11,7 +11,7 @@ import (
 */
 
 var (
-	ErrSize = errors.New("maxSize can't be less than minSize")
+	ErrSize = errors.New("max size can't be less than min size")
 )
 
 type sizedPool struct {
@@ -23,7 +23,7 @@ func newSizedPool(size int) *sizedPool {
 	return &sizedPool{
 		size: size,
 		pool: sync.Pool{
-			New: func() interface{} { return makeSlicePointer(size) },
+			New: func() any { return makeSlicePointer(size) },
 		},
 	}
 }

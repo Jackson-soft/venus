@@ -73,13 +73,9 @@ func (e *EventBus) Producer(handler any, params ...any) {
 
 	task.Handler = reflect.ValueOf(handler)
 
-	if num := len(params); num > 0 {
-		task.Params = make([]reflect.Value, num)
-		for i := range params {
-			task.Params[i] = reflect.ValueOf(params[i])
-		}
-	} else {
-		task.Params = make([]reflect.Value, 0)
+	task.Params = make([]reflect.Value, 0, len(params))
+	for i := range params {
+		task.Params = append(task.Params, reflect.ValueOf(params[i]))
 	}
 
 	e.taskQueue_ <- task
