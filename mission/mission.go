@@ -1,6 +1,7 @@
 package mission
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 )
@@ -17,6 +18,12 @@ type EventBus struct {
 type Task struct {
 	Handler reflect.Value   // 函数体
 	Params  []reflect.Value // 函数参数
+}
+
+func newTask() *Task {
+	task := new(Task)
+	task.Params = make([]reflect.Value, 0)
+	return task
 }
 
 var (
@@ -36,7 +43,7 @@ func create() *EventBus {
 	eb := &EventBus{
 		taskQueue_: make(chan *Task, 8),
 		taskPool_: sync.Pool{
-			New: func() any { return new(Task) },
+			New: func() any { return newTask() },
 		},
 	}
 
@@ -56,8 +63,11 @@ func (e *EventBus) run() {
 }
 
 func (e *EventBus) consumer(task *Task) {
+	fmt.Println("consumer...", task)
 	task.Handler.Call(task.Params)
+	fmt.Println("consumer111...")
 	e.taskPool_.Put(task)
+	fmt.Println("consumer222...")
 }
 
 // 参数：函数体与入参
@@ -68,12 +78,14 @@ func (e *EventBus) Producer(handler any, params ...any) {
 
 	task, ok := e.taskPool_.Get().(*Task)
 	if !ok {
-		task = new(Task)
+		task = newTask()
+	} else {
+		// 清空一下参数
+		task.Params = task.Params[:0]
 	}
 
 	task.Handler = reflect.ValueOf(handler)
 
-	task.Params = make([]reflect.Value, 0, len(params))
 	for i := range params {
 		task.Params = append(task.Params, reflect.ValueOf(params[i]))
 	}
