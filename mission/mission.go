@@ -19,6 +19,12 @@ type Task struct {
 	Params  []reflect.Value // 函数参数
 }
 
+func newTask() *Task {
+	task := new(Task)
+	task.Params = make([]reflect.Value, 0)
+	return task
+}
+
 var (
 	once     sync.Once
 	instance *EventBus
@@ -36,7 +42,7 @@ func create() *EventBus {
 	eb := &EventBus{
 		taskQueue_: make(chan *Task, 8),
 		taskPool_: sync.Pool{
-			New: func() any { return new(Task) },
+			New: func() any { return newTask() },
 		},
 	}
 
@@ -61,22 +67,44 @@ func (e *EventBus) consumer(task *Task) {
 }
 
 // 参数：函数体与入参
-func (e *EventBus) Producer(handler any, params ...any) {
-	if reflect.TypeOf(handler).Kind() != reflect.Func {
-		return
+func (e *EventBus) Producer(handler any, params ...any) error {
+	fn := reflect.ValueOf(handler)
+	if fn.Kind() != reflect.Func {
+		return ErrTaskNotFunc
+	}
+
+	parameterLen := fn.Type().NumIn()
+	if len(params) != parameterLen {
+		return ErrNumberOfParameters
 	}
 
 	task, ok := e.taskPool_.Get().(*Task)
 	if !ok {
-		task = new(Task)
+		task = newTask()
+	} else {
+		// 清空一下参数
+		task.Params = task.Params[:0]
 	}
 
-	task.Handler = reflect.ValueOf(handler)
+	task.Handler = fn
 
-	task.Params = make([]reflect.Value, 0, len(params))
-	for i := range params {
+	for i := 0; i < parameterLen; i++ {
+		t1 := reflect.TypeOf(params[i]).Kind()
+		if t1 == reflect.Interface || t1 == reflect.Pointer {
+			t1 = reflect.TypeOf(params[i]).Elem().Kind()
+		}
+		t2 := reflect.New(fn.Type().In(i)).Elem().Kind()
+		if t2 == reflect.Interface || t2 == reflect.Pointer {
+			t2 = reflect.Indirect(reflect.ValueOf(fn.Type().In(i))).Kind()
+		}
+		if t1 != t2 {
+			return ErrTypeOfParameters
+		}
+
 		task.Params = append(task.Params, reflect.ValueOf(params[i]))
 	}
 
 	e.taskQueue_ <- task
+
+	return nil
 }
