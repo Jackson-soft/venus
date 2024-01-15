@@ -17,7 +17,7 @@ var _ = Describe("Mission", func() {
 				fmt.Println("ddff")
 			}
 
-			Expect(reflect.TypeOf(fn).Kind()).Should(Equal(reflect.Func))
+			Expect(reflect.ValueOf(fn).Kind()).Should(Equal(reflect.Func))
 		})
 	})
 })
@@ -27,7 +27,7 @@ func BenchmarkBuf(b *testing.B) {
 		_, _ = fmt.Println(arg)
 	}
 	for i := 0; i < b.N; i++ {
-		mission.Instance().Producer(fun, i)
+		_ = mission.Instance().Producer(fun, i)
 	}
 }
 
@@ -51,7 +51,7 @@ func TestTask(t *testing.T) {
 			Name: "4dd433",
 		})
 
-		mission.Instance().Producer(pval, int64(888))
+		t.Log(mission.Instance().Producer(pval, 888))
 	}
 }
 

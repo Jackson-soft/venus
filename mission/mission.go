@@ -1,7 +1,6 @@
 package mission
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 )
@@ -63,17 +62,20 @@ func (e *EventBus) run() {
 }
 
 func (e *EventBus) consumer(task *Task) {
-	fmt.Println("consumer...", task)
 	task.Handler.Call(task.Params)
-	fmt.Println("consumer111...")
 	e.taskPool_.Put(task)
-	fmt.Println("consumer222...")
 }
 
 // 参数：函数体与入参
-func (e *EventBus) Producer(handler any, params ...any) {
-	if reflect.TypeOf(handler).Kind() != reflect.Func {
-		return
+func (e *EventBus) Producer(handler any, params ...any) error {
+	fn := reflect.ValueOf(handler)
+	if fn.Kind() != reflect.Func {
+		return ErrTaskNotFunc
+	}
+
+	parameterLen := fn.Type().NumIn()
+	if len(params) != parameterLen {
+		return ErrNumberOfParameters
 	}
 
 	task, ok := e.taskPool_.Get().(*Task)
@@ -84,11 +86,25 @@ func (e *EventBus) Producer(handler any, params ...any) {
 		task.Params = task.Params[:0]
 	}
 
-	task.Handler = reflect.ValueOf(handler)
+	task.Handler = fn
 
-	for i := range params {
+	for i := 0; i < parameterLen; i++ {
+		t1 := reflect.TypeOf(params[i]).Kind()
+		if t1 == reflect.Interface || t1 == reflect.Pointer {
+			t1 = reflect.TypeOf(params[i]).Elem().Kind()
+		}
+		t2 := reflect.New(fn.Type().In(i)).Elem().Kind()
+		if t2 == reflect.Interface || t2 == reflect.Pointer {
+			t2 = reflect.Indirect(reflect.ValueOf(fn.Type().In(i))).Kind()
+		}
+		if t1 != t2 {
+			return ErrTypeOfParameters
+		}
+
 		task.Params = append(task.Params, reflect.ValueOf(params[i]))
 	}
 
 	e.taskQueue_ <- task
+
+	return nil
 }
