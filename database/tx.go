@@ -53,6 +53,20 @@ func (t *Tx) InsertContext(ctx context.Context, query string, args ...any) (int6
 	return res.LastInsertId()
 }
 
+func (t *Tx) ExecContext(ctx context.Context, query string, args ...any) (int64, error) {
+	stmt, err := t.tx_.PrepareContext(ctx, query)
+	if err != nil {
+		return -1, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.ExecContext(ctx, args...)
+	if err != nil {
+		return -1, err
+	}
+	return res.RowsAffected()
+}
+
 func (t *Tx) Delete(query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.Prepare(query)
 	if err != nil {

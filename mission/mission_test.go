@@ -55,6 +55,10 @@ func TestTask(t *testing.T) {
 	}
 }
 
+func mySome(intput int64, vvv any) {
+	fmt.Print(intput, vvv)
+}
+
 func TestValue(t *testing.T) {
 	arg := &mm{
 		Age:  10,
@@ -74,4 +78,14 @@ func TestValue(t *testing.T) {
 	valv := reflect.ValueOf(int64(555))
 
 	fnv.Call([]reflect.Value{valv})
+
+	var some any
+	some = "strdt"
+
+	t.Log(reflect.TypeOf(some).Kind())
+
+	fn := reflect.ValueOf(mySome)
+	for i := 0; i < fn.Type().NumIn(); i++ {
+		t.Log(fn.Type().In(i).Elem().Kind())
+	}
 }

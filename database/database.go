@@ -124,6 +124,20 @@ func (d *Database) Delete(query string, args ...any) (int64, error) {
 	return res.RowsAffected()
 }
 
+func (d *Database) ExecContext(ctx context.Context, query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.PrepareContext(ctx, query)
+	if err != nil {
+		return -1, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.ExecContext(ctx, args...)
+	if err != nil {
+		return -1, err
+	}
+	return res.RowsAffected()
+}
+
 func (d *Database) Update(query string, args ...any) (int64, error) {
 	stmt, err := d.conn_.Prepare(query)
 	if err != nil {
