@@ -7,6 +7,8 @@ import (
 )
 
 func stmtMap(stmt *sql.Stmt, args ...any) (map[string]any, error) {
+	defer stmt.Close()
+
 	rows, err := stmt.Query(args...)
 	if err != nil {
 		return nil, err
@@ -53,6 +55,8 @@ func stmtMap(stmt *sql.Stmt, args ...any) (map[string]any, error) {
 }
 
 func stmtMapCtx(ctx context.Context, stmt *sql.Stmt, args ...any) (map[string]any, error) {
+	defer stmt.Close()
+
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err
@@ -99,6 +103,8 @@ func stmtMapCtx(ctx context.Context, stmt *sql.Stmt, args ...any) (map[string]an
 }
 
 func stmtMapSlice(stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
+	defer stmt.Close()
+
 	rows, err := stmt.Query(args...)
 	if err != nil {
 		return nil, err
@@ -145,6 +151,8 @@ func stmtMapSlice(stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
 }
 
 func stmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
+	defer stmt.Close()
+
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err
