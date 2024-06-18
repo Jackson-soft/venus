@@ -11,6 +11,7 @@ import (
 type EventBus struct {
 	taskQueue_ chan *Task // 任务队列
 	taskPool_  sync.Pool  // 任务池
+	close_     chan struct{}
 }
 
 // 消息体
@@ -40,13 +41,16 @@ func Instance() *EventBus {
 
 func create() *EventBus {
 	eb := &EventBus{
-		taskQueue_: make(chan *Task, 8),
+		taskQueue_: make(chan *Task, 9),
 		taskPool_: sync.Pool{
 			New: func() any { return newTask() },
 		},
+		close_: make(chan struct{}),
 	}
 
-	go eb.run()
+	for i := 0; i < 3; i++ {
+		go eb.run()
+	}
 
 	return eb
 }
@@ -56,8 +60,16 @@ func (e *EventBus) run() {
 		_ = recover()
 	}()
 
-	for task := range e.taskQueue_ {
-		e.consumer(task)
+	for {
+		select {
+		case <-e.close_:
+			return
+		case task, ok := <-e.taskQueue_:
+			if !ok {
+				return
+			}
+			e.consumer(task)
+		}
 	}
 }
 
@@ -107,4 +119,11 @@ func (e *EventBus) Producer(handler any, params ...any) error {
 	e.taskQueue_ <- task
 
 	return nil
+}
+
+func (e *EventBus) Close() {
+	e.close_ <- struct{}{}
+
+	close(e.taskQueue_)
+	close(e.close_)
 }
