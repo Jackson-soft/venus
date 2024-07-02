@@ -43,7 +43,18 @@ func (q *Queue[T]) Push(v T) {
 	q.mutex_.Unlock()
 }
 
-// 弹出
+// 访问头部
+func (q *Queue[T]) Front() (T, bool) {
+	q.mutex_.RLock()
+	defer q.mutex_.RUnlock()
+
+	if q.size_ == 0 {
+		return q.head_.value_, false
+	}
+	return q.head_.value_, true
+}
+
+// 弹出头部，并删除
 func (q *Queue[T]) Pop() (T, bool) {
 	q.mutex_.Lock()
 	defer q.mutex_.Unlock()
@@ -58,6 +69,19 @@ func (q *Queue[T]) Pop() (T, bool) {
 
 	q.size_--
 	return n.value_, true
+}
+
+// 删除头部
+func (q *Queue[T]) Erase() {
+	q.mutex_.Lock()
+	defer q.mutex_.Unlock()
+
+	if q.size_ > 0 {
+		n := q.head_
+		q.head_ = n.next_
+
+		q.size_--
+	}
 }
 
 func (q *Queue[T]) Size() uint {

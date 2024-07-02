@@ -43,6 +43,27 @@ var _ = Describe("test queue", func() {
 			Expect(ok).Should(BeTrue())
 		})
 	})
+
+	Context("test erase", func() {
+		It("erase", func() {
+			queue.Push(1)
+			queue.Push(2)
+			queue.Push(3)
+
+			value, ok := queue.Front()
+			Expect(ok).Should(BeTrue())
+			Expect(value).Should(Equal(1))
+
+			queue.Erase()
+			Expect(queue.Size()).Should(Equal(uint(2)))
+
+			queue.Erase()
+			Expect(queue.Size()).Should(Equal(uint(1)))
+
+			queue.Erase()
+			Expect(queue.Size()).Should(Equal(uint(0)))
+		})
+	})
 })
 
 func BenchmarkQueue2(b *testing.B) {
