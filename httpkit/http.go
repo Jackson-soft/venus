@@ -14,13 +14,13 @@ import (
 var DefaultClient = &http.Client{
 	Transport: &http.Transport{
 		DialContext: (&net.Dialer{
-			Timeout: 15 * time.Second, // 拨号超时
+			Timeout: 90 * time.Second, // 拨号超时
 		}).DialContext,
-		TLSHandshakeTimeout:   15 * time.Second, // TLS握手超时
-		ResponseHeaderTimeout: 15 * time.Second, // 响应头超时
+		TLSHandshakeTimeout:   90 * time.Second, // TLS握手超时
+		ResponseHeaderTimeout: 90 * time.Second, // 响应头超时
 		MaxIdleConnsPerHost:   16,               // 同一主机的最大空闲连接数
 	},
-	Timeout: 60 * time.Second, // 全局请求超时
+	Timeout: 90 * time.Second, // 全局请求超时
 }
 
 type WebBase struct {
