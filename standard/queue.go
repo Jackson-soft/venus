@@ -48,8 +48,9 @@ func (q *Queue[T]) Front() (T, bool) {
 	q.mutex_.RLock()
 	defer q.mutex_.RUnlock()
 
+	var value T
 	if q.size_ == 0 {
-		return q.head_.value_, false
+		return value, false
 	}
 	return q.head_.value_, true
 }

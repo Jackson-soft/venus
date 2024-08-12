@@ -63,6 +63,12 @@ var _ = Describe("test queue", func() {
 			queue.Erase()
 			Expect(queue.Size()).Should(Equal(uint(0)))
 		})
+
+		It("empty", func() {
+			value, ok := queue.Front()
+			Expect(ok).Should(BeFalse())
+			Expect(value).Should(Equal(0))
+		})
 	})
 })
 
