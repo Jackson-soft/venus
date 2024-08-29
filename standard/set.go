@@ -1,73 +1,58 @@
 package standard
 
 import (
-	"sync"
+	"cmp"
+	"slices"
 )
 
 // 不重复切片
-type Set[T comparable] struct {
-	mutex_ sync.RWMutex
-	m_     map[T]struct{}
+type Set[T cmp.Ordered] struct {
+	value_ map[T]struct{}
 }
 
-func NewSet[T comparable]() Set[T] {
+func NewSet[T cmp.Ordered]() Set[T] {
 	return Set[T]{
-		mutex_: sync.RWMutex{},
-		m_:     make(map[T]struct{}),
+		value_: make(map[T]struct{}),
 	}
 }
 
 func (s *Set[T]) Insert(key T) {
-	s.mutex_.Lock()
-	s.m_[key] = struct{}{}
-	s.mutex_.Unlock()
+	s.value_[key] = struct{}{}
 }
 
 func (s *Set[T]) Erase(key T) {
-	s.mutex_.Lock()
-	delete(s.m_, key)
-	s.mutex_.Unlock()
+	delete(s.value_, key)
 }
 
-func (s *Set[T]) Has(key T) bool {
-	s.mutex_.RLock()
-	defer s.mutex_.RUnlock()
-	_, ok := s.m_[key]
+func (s *Set[T]) Exist(key T) bool {
+	_, ok := s.value_[key]
 	return ok
 }
 
 func (s *Set[T]) Size() int {
-	s.mutex_.RLock()
-	defer s.mutex_.RUnlock()
-	return len(s.m_)
+	return len(s.value_)
 }
 
 func (s *Set[T]) Empty() bool {
-	s.mutex_.RLock()
-	defer s.mutex_.RUnlock()
 	return s.Size() == 0
 }
 
 func (s *Set[T]) Clear() {
-	s.mutex_.Lock()
-	s.m_ = make(map[T]struct{})
-	s.mutex_.Unlock()
+	s.value_ = make(map[T]struct{})
 }
 
 func (s *Set[T]) List() []T {
-	s.mutex_.RLock()
-	defer s.mutex_.RUnlock()
-	list := make([]T, 0, s.Size())
-	for i := range s.m_ {
-		list = append(list, i)
+	list := make([]T, s.Size())
+	i := 0
+	for key := range s.value_ {
+		list[i] = key
+		i++
 	}
 	return list
 }
 
-/*
 func (s *Set[T]) SortList() []T {
 	list := s.List()
-	sort.Strings(list)
+	slices.Sort(list)
 	return list
 }
-*/

@@ -1,6 +1,8 @@
 package standard_test
 
 import (
+	"fmt"
+
 	"github.com/Jackson-soft/venus/standard"
 	. "github.com/onsi/ginkgo/v2"
 
@@ -44,10 +46,13 @@ var _ = Describe("test set", func() {
 
 			s.Insert(4)
 
-			array := s.List()
-			Expect(len(array)).Should(Equal(2))
+			s.Insert(2)
 
-			// sarray := s.SortList()
+			array := s.List()
+			Expect(len(array)).Should(Equal(3))
+
+			sarray := s.SortList()
+			fmt.Printf("%v\n", sarray)
 
 			s.Erase(4)
 
