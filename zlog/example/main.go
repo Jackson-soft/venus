@@ -3,7 +3,7 @@ package main
 import (
 	"runtime/debug"
 
-	"github.com/Jackson-soft/zlog"
+	"github.com/Jackson-soft/venus/zlog"
 )
 
 func main() {

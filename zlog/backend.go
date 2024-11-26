@@ -31,8 +31,7 @@ type InciseFileBackend struct {
 }
 
 const (
-	timeFormat = "2006-01-02 15:04:05.000"
-	dayFormat  = "20060102"
+	dayFormat = "20060102"
 
 	defaultMaxSize = int64(500 * 1024 * 1024) // 500M
 	defaultIndex   = 1
