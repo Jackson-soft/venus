@@ -5,6 +5,7 @@ import (
 
 	"github.com/Jackson-soft/venus/database"
 
+	_ "github.com/go-sql-driver/mysql"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

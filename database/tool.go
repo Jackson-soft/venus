@@ -3,7 +3,9 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"reflect"
+	"regexp"
 )
 
 func stmtMap(stmt *sql.Stmt, args ...any) (map[string]any, error) {
@@ -196,4 +198,20 @@ func stmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[st
 	}
 
 	return results, nil
+}
+
+// 将mysql的占位符转换为postgres的占位符
+func Rebind(query string) string {
+	// 使用正则表达式匹配所有的问号
+	re := regexp.MustCompile(`\?`)
+	index := 1
+
+	// 使用替换函数来替换每个问号
+	result := re.ReplaceAllStringFunc(query, func(_ string) string {
+		placeholder := fmt.Sprintf("$%d", index)
+		index++
+		return placeholder
+	})
+
+	return result
 }
