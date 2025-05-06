@@ -13,6 +13,8 @@ var _ = Describe("Tool", func() {
 			Expect(database.Rebind("select * from table where id = ?")).To(Equal("select * from table where id = $1"))
 
 			Expect(database.Rebind("select * from table where id = ? and name = ?")).To(Equal("select * from table where id = $1 and name = $2"))
+
+			Expect(database.Rebind("insert into table (a,b,c) values (?,?,?)")).To(Equal("insert into table (a,b,c) values ($1,$2,$3)"))
 		})
 	})
 })

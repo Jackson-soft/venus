@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"reflect"
 	"regexp"
 )
 
@@ -25,28 +24,23 @@ func stmtMap(stmt *sql.Stmt, args ...any) (map[string]any, error) {
 
 	values := make([]any, len(cols))
 
-	scanArgs := make([]any, len(values))
 	for i := range values {
-		scanArgs[i] = &values[i]
+		values[i] = new(any)
 	}
 
 	result := make(map[string]any, len(cols))
 
 	if rows.Next() {
-		if err = rows.Scan(scanArgs...); err != nil {
+		if err = rows.Scan(values...); err != nil {
 			return nil, err
 		}
 
 		for ii, key := range cols {
-			if scanArgs[ii] == nil {
+			if values[ii] == nil {
 				continue
 			}
-			value := reflect.Indirect(reflect.ValueOf(scanArgs[ii]))
-			if value.Elem().Kind() == reflect.Slice {
-				result[key] = string(value.Interface().([]byte))
-			} else {
-				result[key] = value.Interface()
-			}
+
+			result[key] = *(values[ii].(*any))
 		}
 	}
 	if err = rows.Err(); err != nil {
@@ -73,28 +67,22 @@ func stmtMapCtx(ctx context.Context, stmt *sql.Stmt, args ...any) (map[string]an
 
 	values := make([]any, len(cols))
 
-	scanArgs := make([]any, len(values))
 	for i := range values {
-		scanArgs[i] = &values[i]
+		values[i] = new(any)
 	}
 
 	result := make(map[string]any, len(cols))
 
 	if rows.Next() {
-		if err = rows.Scan(scanArgs...); err != nil {
+		if err = rows.Scan(values...); err != nil {
 			return nil, err
 		}
 
 		for ii, key := range cols {
-			if scanArgs[ii] == nil {
+			if values[ii] == nil {
 				continue
 			}
-			value := reflect.Indirect(reflect.ValueOf(scanArgs[ii]))
-			if value.Elem().Kind() == reflect.Slice {
-				result[key] = string(value.Interface().([]byte))
-			} else {
-				result[key] = value.Interface()
-			}
+			result[key] = *(values[ii].(*any))
 		}
 	}
 	if err = rows.Err(); err != nil {
@@ -119,28 +107,22 @@ func stmtMapSlice(stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
 	}
 
 	values := make([]any, len(cols))
+	results := make([]map[string]any, 0)
 
-	scanArgs := make([]any, len(values))
 	for i := range values {
-		scanArgs[i] = &values[i]
+		values[i] = new(any)
 	}
 
-	var results []map[string]any
 	for rows.Next() {
-		if err = rows.Scan(scanArgs...); err != nil {
+		if err = rows.Scan(values...); err != nil {
 			return nil, err
 		}
 		result := make(map[string]any, len(cols))
 		for ii, key := range cols {
-			if scanArgs[ii] == nil {
+			if values[ii] == nil {
 				continue
 			}
-			value := reflect.Indirect(reflect.ValueOf(scanArgs[ii]))
-			if value.Elem().Kind() == reflect.Slice {
-				result[key] = string(value.Interface().([]byte))
-			} else {
-				result[key] = value.Interface()
-			}
+			result[key] = *(values[ii].(*any))
 		}
 		results = append(results, result)
 	}
@@ -167,28 +149,22 @@ func stmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[st
 	}
 
 	values := make([]any, len(cols))
+	results := make([]map[string]any, 0)
 
-	scanArgs := make([]any, len(values))
 	for i := range values {
-		scanArgs[i] = &values[i]
+		values[i] = new(any)
 	}
 
-	var results []map[string]any
 	for rows.Next() {
-		if err = rows.Scan(scanArgs...); err != nil {
+		if err = rows.Scan(values...); err != nil {
 			return nil, err
 		}
 		result := make(map[string]any, len(cols))
 		for ii, key := range cols {
-			if scanArgs[ii] == nil {
+			if values[ii] == nil {
 				continue
 			}
-			value := reflect.Indirect(reflect.ValueOf(scanArgs[ii]))
-			if value.Elem().Kind() == reflect.Slice {
-				result[key] = string(value.Interface().([]byte))
-			} else {
-				result[key] = value.Interface()
-			}
+			result[key] = *(values[ii].(*any))
 		}
 		results = append(results, result)
 	}
