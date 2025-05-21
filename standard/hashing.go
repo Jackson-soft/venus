@@ -8,14 +8,16 @@ import (
 
 // 一致性hash
 
-type HashFunc func(data []byte) uint32
+type (
+	HashFunc func(data []byte) uint32
 
-type Hashing struct {
-	hash_     HashFunc       // 自定义哈希算法，默认是crc32.ChecksumIEEE
-	replicas_ int            // 虚拟节点倍数
-	keys_     []int          // 哈希环,Sorted
-	hashMap_  map[int]string // 虚拟节点与真实节点的映射表，键是虚拟节点的哈希值，值是真实节点的名称
-}
+	Hashing struct {
+		hash_     HashFunc       // 自定义哈希算法，默认是crc32.ChecksumIEEE
+		replicas_ int            // 虚拟节点倍数
+		keys_     []int          // 哈希环,Sorted
+		hashMap_  map[int]string // 虚拟节点与真实节点的映射表，键是虚拟节点的哈希值，值是真实节点的名称
+	}
+)
 
 func NewHashing(replicas int, fn HashFunc) *Hashing {
 	if fn == nil {
@@ -33,7 +35,7 @@ func NewHashing(replicas int, fn HashFunc) *Hashing {
 // Add adds some keys to the hash.
 func (h *Hashing) Add(keys ...string) {
 	for i := range keys {
-		for n := 0; n < h.replicas_; n++ {
+		for n := range h.replicas_ {
 			hash := int(h.hash_([]byte(strconv.Itoa(n) + keys[i])))
 			h.keys_ = append(h.keys_, hash)
 			h.hashMap_[hash] = keys[i]
@@ -44,7 +46,7 @@ func (h *Hashing) Add(keys ...string) {
 
 func (h *Hashing) Del(keys ...string) {
 	for i := range keys {
-		for n := 0; n < h.replicas_; n++ {
+		for n := range h.replicas_ {
 			hash := int(h.hash_([]byte(strconv.Itoa(n) + keys[i])))
 			for m := range h.keys_ {
 				if h.keys_[m] == hash {

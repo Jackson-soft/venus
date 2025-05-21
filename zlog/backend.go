@@ -9,26 +9,28 @@ import (
 )
 
 // Backend 日志输出端接口
-type Backend interface {
-	Write(buf []byte) (int, error)
-	Sync() error
-	Close() error
-}
+type (
+	Backend interface {
+		Write(buf []byte) (int, error)
+		Sync() error
+		Close() error
+	}
 
-// InciseFileBackend 文件切割后端
-type InciseFileBackend struct {
-	fd *os.File
+	// InciseFileBackend 文件切割后端
+	InciseFileBackend struct {
+		fd *os.File
 
-	filePath    string // 文件存放目录
-	fileLink    string // 文件软链接
-	namePrefix  string // 日志文件名前缀
-	maxFileSize int64  // 日志文件最大大小，单位M
+		filePath    string // 文件存放目录
+		fileLink    string // 文件软链接
+		namePrefix  string // 日志文件名前缀
+		maxFileSize int64  // 日志文件最大大小，单位M
 
-	appellation string // 文件的名称
-	index       int    // 文件序号
-	currentDay  string // 当前日期
-	changed     bool   // 日志文件是否要切割
-}
+		appellation string // 文件的名称
+		index       int    // 文件序号
+		currentDay  string // 当前日期
+		changed     bool   // 日志文件是否要切割
+	}
+)
 
 const (
 	dayFormat = "20060102"

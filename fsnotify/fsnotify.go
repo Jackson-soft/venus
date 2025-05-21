@@ -9,13 +9,18 @@ package fsnotify
 */
 
 // Event represents a single file system notification.
-type Event struct {
-	Name_ string // Relative path to the file or directory.
-	Op_   Op     // File operation that triggered the event.
-}
+type (
+	Event struct {
+		Name_ string // Relative path to the file or directory.
+		Op_   Op     // File operation that triggered the event.
+	}
 
-// Op describes a set of file operations.
-type Op uint
+	// Op describes a set of file operations.
+	Op uint
+
+	// action
+	Action uint
+)
 
 // These are the generalized file operations that can trigger a notification.
 const (
@@ -25,9 +30,6 @@ const (
 	Rename
 	Chmod
 )
-
-// action
-type Action uint
 
 const (
 	MarkAdd Action = 1 << iota

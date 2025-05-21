@@ -10,35 +10,37 @@ import (
 )
 
 // Node 时间轮槽的链表节点
-type Node struct {
-	id      string
-	tType   TimerType
-	delay   time.Duration          // 延迟时间
-	circle  int                    // 时间轮需要转动几圈
-	handler func(args interface{}) // 任务函数
-	args    interface{}            // 函数参数
-}
+type (
+	Node struct {
+		id      string
+		tType   TimerType
+		delay   time.Duration  // 延迟时间
+		circle  int            // 时间轮需要转动几圈
+		handler func(args any) // 任务函数
+		args    any            // 函数参数
+	}
 
-// TimeWheel 时间轮
-type TimeWheel struct {
-	slots      []*list.List // 时间轮的槽
-	currentPos int          // 当前指针指向哪一个槽
-	slotNum    int          // 槽数量
-}
+	// TimeWheel 时间轮
+	TimeWheel struct {
+		slots      []*list.List // 时间轮的槽
+		currentPos int          // 当前指针指向哪一个槽
+		slotNum    int          // 槽数量
+	}
 
-// Timer 定时器
-type Timer struct {
-	mutex  sync.Mutex
-	tick   time.Duration //最小粒度
-	ticker *time.Ticker
+	// Timer 定时器
+	Timer struct {
+		mutex  sync.Mutex
+		tick   time.Duration //最小粒度
+		ticker *time.Ticker
 
-	timeWheel *TimeWheel
-	timerMap  sync.Map //存储定时器id对应的槽位置
-	stop      chan bool
-}
+		timeWheel *TimeWheel
+		timerMap  sync.Map //存储定时器id对应的槽位置
+		stop      chan bool
+	}
 
-// TimerType 定时器类型
-type TimerType uint8
+	// TimerType 定时器类型
+	TimerType uint8
+)
 
 const (
 	Single     TimerType = 1 //单次
@@ -73,7 +75,7 @@ func NewTimer(tick time.Duration, num int) *Timer {
 
 	t.stop = make(chan bool)
 
-	for i := 0; i < t.timeWheel.slotNum; i++ {
+	for i := range t.timeWheel.slotNum {
 		t.timeWheel.slots[i] = list.New()
 	}
 
@@ -83,7 +85,7 @@ func NewTimer(tick time.Duration, num int) *Timer {
 }
 
 // Register 注册一个定时器，返回timerID
-func (t *Timer) Register(tType TimerType, delay time.Duration, handler func(args interface{}), args interface{}) (string, error) {
+func (t *Timer) Register(tType TimerType, delay time.Duration, handler func(args any), args any) (string, error) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 

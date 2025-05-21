@@ -9,21 +9,23 @@ import (
 )
 
 // Fields type
-type Fields map[string]interface{}
+type (
+	Fields map[string]any
 
-// Formatter 格式化前端
-type Formatter interface {
-	SetLevel(lvl string) error
-	Format(level Level, msg string) []byte
-	WithFields(fields Fields)
-}
+	// Formatter 格式化前端
+	Formatter interface {
+		SetLevel(lvl string) error
+		Format(level Level, msg string) []byte
+		WithFields(fields Fields)
+	}
 
-// TextFormatter 文本格式化前端
-type TextFormatter struct {
-	strLevel string
-	tLevel   Level
-	data     Fields
-}
+	// TextFormatter 文本格式化前端
+	TextFormatter struct {
+		strLevel string
+		tLevel   Level
+		data     Fields
+	}
+)
 
 // NewTextFmt 创建格式化
 func NewTextFmt(lvl string) *TextFormatter {

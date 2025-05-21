@@ -14,10 +14,20 @@ var (
 	ErrSize = errors.New("max size can't be less than min size")
 )
 
-type sizedPool struct {
-	size int
-	pool sync.Pool
-}
+type (
+	sizedPool struct {
+		size int
+		pool sync.Pool
+	}
+
+	// Pool is actually multiple pools which store buffers of specific size.
+	// i.e. it can be three pools which return buffers 32K, 64K and 128K.
+	Pool struct {
+		minSize int
+		maxSize int
+		pools   []*sizedPool
+	}
+)
 
 func newSizedPool(size int) *sizedPool {
 	return &sizedPool{
@@ -26,14 +36,6 @@ func newSizedPool(size int) *sizedPool {
 			New: func() any { return makeSlicePointer(size) },
 		},
 	}
-}
-
-// Pool is actually multiple pools which store buffers of specific size.
-// i.e. it can be three pools which return buffers 32K, 64K and 128K.
-type Pool struct {
-	minSize int
-	maxSize int
-	pools   []*sizedPool
 }
 
 // New returns Pool which has buckets from minSize to maxSize.
