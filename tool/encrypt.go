@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha3"
 	"encoding/hex"
-
-	"golang.org/x/crypto/sha3"
 )
 
 func Sha3(txt string) string {

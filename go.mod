@@ -1,13 +1,12 @@
 module github.com/Jackson-soft/venus
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
-	golang.org/x/crypto v0.38.0
 	golang.org/x/sys v0.33.0
 )
 

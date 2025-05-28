@@ -7,29 +7,31 @@ import (
 
 // 简单的异步队列
 
-// 消息总线
-type EventBus struct {
-	taskQueue_ chan *Task // 任务队列
-	taskPool_  sync.Pool  // 任务池
-	close_     chan struct{}
-}
+type (
+	// 消息总线
+	EventBus struct {
+		taskQueue_ chan *Task // 任务队列
+		taskPool_  sync.Pool  // 任务池
+		close_     chan struct{}
+	}
 
-// 消息体
-type Task struct {
-	Handler reflect.Value   // 函数体
-	Params  []reflect.Value // 函数参数
-}
+	// 消息体
+	Task struct {
+		Handler reflect.Value   // 函数体
+		Params  []reflect.Value // 函数参数
+	}
+)
+
+var (
+	once     sync.Once
+	instance *EventBus
+)
 
 func newTask() *Task {
 	task := new(Task)
 	task.Params = make([]reflect.Value, 0)
 	return task
 }
-
-var (
-	once     sync.Once
-	instance *EventBus
-)
 
 func Instance() *EventBus {
 	once.Do(func() {
