@@ -2,6 +2,7 @@ package httpkit
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net"
@@ -58,4 +59,13 @@ func WebDo(base *WebBase) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func HttpDo(base *WebBase, resp any) error {
+	body, err := WebDo(base)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(body, resp)
 }
