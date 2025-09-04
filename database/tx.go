@@ -15,9 +15,11 @@ func (t *Tx) Close() error {
 		return t.tx_.Rollback()
 	}
 
-	if err := t.tx_.Commit(); err != nil {
+	err := t.tx_.Commit()
+	if err != nil {
 		return t.tx_.Rollback()
 	}
+
 	return nil
 }
 
@@ -36,6 +38,7 @@ func (t *Tx) Insert(query string, args ...any) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+
 	return res.LastInsertId()
 }
 
@@ -50,6 +53,7 @@ func (t *Tx) InsertContext(ctx context.Context, query string, args ...any) (int6
 	if err != nil {
 		return -1, err
 	}
+
 	return res.LastInsertId()
 }
 
@@ -64,6 +68,7 @@ func (t *Tx) ExecContext(ctx context.Context, query string, args ...any) (int64,
 	if err != nil {
 		return -1, err
 	}
+
 	return res.RowsAffected()
 }
 

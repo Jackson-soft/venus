@@ -4,6 +4,6 @@ package httpkit
 const (
 	HeaderAuth = "Authorization"
 	HeaderType = "Content-Type"
-	HeaderJson = "application/json; charset=UTF-8"
+	HeaderJson = "application/json"
 	HeaderUrl  = "application/x-www-form-urlencoded"
 )

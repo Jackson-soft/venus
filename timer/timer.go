@@ -30,11 +30,11 @@ type (
 	// Timer 定时器
 	Timer struct {
 		mutex  sync.Mutex
-		tick   time.Duration //最小粒度
+		tick   time.Duration // 最小粒度
 		ticker *time.Ticker
 
 		timeWheel *TimeWheel
-		timerMap  sync.Map //存储定时器id对应的槽位置
+		timerMap  sync.Map // 存储定时器id对应的槽位置
 		stop      chan bool
 	}
 
@@ -55,6 +55,7 @@ func NewTimer(tick time.Duration, num int) *Timer {
 	if tick <= 0 {
 		tick = defaultTick
 	}
+
 	if num <= 0 {
 		num = defaultNum
 	}
@@ -113,16 +114,6 @@ func (t *Timer) Register(tType TimerType, delay time.Duration, handler func(args
 	return node.id, nil
 }
 
-func (t *Timer) registerV1(node *Node) {
-	pos, circle := t.getPositionAndCircle(node.delay)
-
-	node.circle = circle
-
-	t.timeWheel.slots[pos].PushBack(node)
-
-	t.timerMap.Store(node.id, pos)
-}
-
 // Remove 删除指定定时器
 func (t *Timer) Remove(timerID string) error {
 	t.mutex.Lock()
@@ -138,15 +129,19 @@ func (t *Timer) Remove(timerID string) error {
 	}
 
 	l := t.timeWheel.slots[pos.(int)]
+
 	for e := l.Front(); e != nil; {
 		job := e.Value.(*Node)
 		if job.id == timerID {
 			t.timerMap.Delete(timerID)
 			l.Remove(e)
+
 			break
 		}
+
 		e = e.Next()
 	}
+
 	return nil
 }
 
@@ -165,26 +160,37 @@ func (t *Timer) Reset(timerID string) error {
 	}
 
 	l := t.timeWheel.slots[pos.(int)]
+
 	for e := l.Front(); e != nil; {
 		job := e.Value.(*Node)
 		if job.id == timerID {
 			l.Remove(e)
 			t.registerV1(job)
+
 			break
 		}
+
 		e = e.Next()
 	}
+
 	return nil
+}
+
+// Stop 停止
+func (t *Timer) Stop() {
+	t.stop <- true
 }
 
 // 获取定时器在槽中的位置, 时间轮需要转动的圈数
 func (t *Timer) getPositionAndCircle(d time.Duration) (pos int, circle int) {
 	delaySeconds := int(d.Seconds())
 	intervalSeconds := int(t.tick.Seconds())
-	circle = int(delaySeconds / intervalSeconds / t.timeWheel.slotNum)
-	pos = int(t.timeWheel.currentPos+delaySeconds/intervalSeconds) % t.timeWheel.slotNum
 
-	return
+	pos = (t.timeWheel.currentPos + delaySeconds/intervalSeconds) % t.timeWheel.slotNum
+
+	circle = delaySeconds / intervalSeconds / t.timeWheel.slotNum
+
+	return pos, circle
 }
 
 func (t *Timer) step() {
@@ -194,13 +200,16 @@ func (t *Timer) step() {
 		if job.circle > 0 {
 			job.circle--
 			e = e.Next()
+
 			continue
 		}
+
 		go job.handler(job.args)
 
 		next := e.Next()
+
 		if job.tType == Repetition {
-			//循环的重新注册
+			// 循环的重新注册
 			t.registerV1(job)
 		} else {
 			t.timerMap.Delete(job.id)
@@ -217,14 +226,10 @@ func (t *Timer) step() {
 	}
 }
 
-// Stop 停止
-func (t *Timer) Stop() {
-	t.stop <- true
-}
-
 // Run 主循环
 func (t *Timer) run() {
 	t.ticker = time.NewTicker(t.tick)
+
 	for {
 		select {
 		case <-t.ticker.C:
@@ -235,4 +240,14 @@ func (t *Timer) run() {
 			}
 		}
 	}
+}
+
+func (t *Timer) registerV1(node *Node) {
+	pos, circle := t.getPositionAndCircle(node.delay)
+
+	node.circle = circle
+
+	t.timeWheel.slots[pos].PushBack(node)
+
+	t.timerMap.Store(node.id, pos)
 }

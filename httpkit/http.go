@@ -47,11 +47,11 @@ func WebDo(base *WebBase) ([]byte, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(resp.Status)
 	}
+
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

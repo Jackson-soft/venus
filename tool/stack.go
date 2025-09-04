@@ -25,10 +25,12 @@ func PanicTrace(kb int) []byte {
 	stack = stack[start:length]
 	start = bytes.Index(stack, line) + 1
 	stack = stack[start:]
+
 	end := bytes.LastIndex(stack, line)
 	if end != -1 {
 		stack = stack[:end]
 	}
+
 	end = bytes.Index(stack, e)
 	if end != -1 {
 		stack = stack[:end]

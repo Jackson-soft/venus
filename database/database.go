@@ -18,6 +18,7 @@ func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	database := &Database{
 		conn_: conn,
 		name_: driverName,
@@ -29,6 +30,7 @@ func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
 			op(database)
 		}
 	}
+
 	return database, nil
 }
 
@@ -56,6 +58,7 @@ func (d *Database) Reset(db *sql.DB, dsn string) {
 	if db == nil {
 		return
 	}
+
 	d.conn_ = db
 	d.dsn_ = dsn
 }
@@ -65,6 +68,7 @@ func (d *Database) BeginTx() (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &Tx{
 		tx_:       tx,
 		hasError_: false,
@@ -76,6 +80,7 @@ func (d *Database) BeginTxCtx(ctx context.Context) (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &Tx{
 		tx_:       tx,
 		hasError_: false,
@@ -93,6 +98,7 @@ func (d *Database) Insert(query string, args ...any) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
+
 	return res.LastInsertId()
 }
 
@@ -107,6 +113,7 @@ func (d *Database) InsertContext(ctx context.Context, query string, args ...any)
 	if err != nil {
 		return -1, err
 	}
+
 	return res.LastInsertId()
 }
 
@@ -121,6 +128,7 @@ func (d *Database) ExecContext(ctx context.Context, query string, args ...any) (
 	if err != nil {
 		return -1, err
 	}
+
 	return res.RowsAffected()
 }
 

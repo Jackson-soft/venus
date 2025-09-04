@@ -30,6 +30,7 @@ var (
 func newTask() *Task {
 	task := new(Task)
 	task.Params = make([]reflect.Value, 0)
+
 	return task
 }
 
@@ -50,34 +51,11 @@ func create() *EventBus {
 		close_: make(chan struct{}),
 	}
 
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		go eb.run()
 	}
 
 	return eb
-}
-
-func (e *EventBus) run() {
-	defer func() {
-		_ = recover()
-	}()
-
-	for {
-		select {
-		case <-e.close_:
-			return
-		case task, ok := <-e.taskQueue_:
-			if !ok {
-				return
-			}
-			e.consumer(task)
-		}
-	}
-}
-
-func (e *EventBus) consumer(task *Task) {
-	task.Handler.Call(task.Params)
-	e.taskPool_.Put(task)
 }
 
 // 参数：函数体与入参
@@ -102,15 +80,17 @@ func (e *EventBus) Producer(handler any, params ...any) error {
 
 	task.Handler = fn
 
-	for i := 0; i < parameterLen; i++ {
+	for i := range parameterLen {
 		t1 := reflect.TypeOf(params[i]).Kind()
 		if t1 == reflect.Interface || t1 == reflect.Pointer {
 			t1 = reflect.TypeOf(params[i]).Elem().Kind()
 		}
+
 		t2 := reflect.New(fn.Type().In(i)).Elem().Kind()
 		if t2 == reflect.Interface || t2 == reflect.Pointer {
 			t2 = reflect.Indirect(reflect.ValueOf(fn.Type().In(i))).Kind()
 		}
+
 		if t1 != t2 {
 			return ErrTypeOfParameters
 		}
@@ -128,4 +108,28 @@ func (e *EventBus) Close() {
 
 	close(e.taskQueue_)
 	close(e.close_)
+}
+
+func (e *EventBus) run() {
+	defer func() {
+		_ = recover()
+	}()
+
+	for {
+		select {
+		case <-e.close_:
+			return
+		case task, ok := <-e.taskQueue_:
+			if !ok {
+				return
+			}
+
+			e.consumer(task)
+		}
+	}
+}
+
+func (e *EventBus) consumer(task *Task) {
+	task.Handler.Call(task.Params)
+	e.taskPool_.Put(task)
 }
