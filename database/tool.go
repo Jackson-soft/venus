@@ -64,17 +64,6 @@ func rowMap(rows *sql.Rows) (map[string]any, error) {
 	return result, nil
 }
 
-func stmtMap(stmt *sql.Stmt, args ...any) (map[string]any, error) {
-	defer stmt.Close()
-
-	rows, err := stmt.Query(args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return rowMap(rows)
-}
-
 func stmtMapCtx(ctx context.Context, stmt *sql.Stmt, args ...any) (map[string]any, error) {
 	defer stmt.Close()
 
@@ -126,17 +115,6 @@ func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 	}
 
 	return results, nil
-}
-
-func stmtMapSlice(stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
-	defer stmt.Close()
-
-	rows, err := stmt.Query(args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return rowMapSlice(rows)
 }
 
 func stmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[string]any, error) {

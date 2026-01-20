@@ -27,21 +27,6 @@ func (t *Tx) HasError() {
 	t.hasError_ = true
 }
 
-func (t *Tx) Insert(query string, args ...any) (int64, error) {
-	stmt, err := t.tx_.Prepare(query)
-	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(args...)
-	if err != nil {
-		return -1, err
-	}
-
-	return res.LastInsertId()
-}
-
 func (t *Tx) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
@@ -72,15 +57,6 @@ func (t *Tx) ExecContext(ctx context.Context, query string, args ...any) (int64,
 	return res.RowsAffected()
 }
 
-func (t *Tx) QueryForMap(query string, args ...any) (map[string]any, error) {
-	stmt, err := t.tx_.Prepare(query)
-	if err != nil {
-		return nil, err
-	}
-
-	return stmtMap(stmt, args...)
-}
-
 func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
 	stmt, err := t.tx_.PrepareContext(ctx, query)
 	if err != nil {
@@ -88,15 +64,6 @@ func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...any) (ma
 	}
 
 	return stmtMapCtx(ctx, stmt, args...)
-}
-
-func (t *Tx) QueryForMapSlice(query string, args ...any) ([]map[string]any, error) {
-	stmt, err := t.tx_.Prepare(query)
-	if err != nil {
-		return nil, err
-	}
-
-	return stmtMapSlice(stmt, args...)
 }
 
 func (t *Tx) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {

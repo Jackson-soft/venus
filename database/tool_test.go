@@ -1,20 +1,20 @@
 package database_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/Jackson-soft/venus/database"
 )
 
-var _ = Describe("Tool", func() {
-	Context("rebind", func() {
-		It("mysql to postgres", func() {
-			Expect(database.Rebind("select * from table where id = ?")).To(Equal("select * from table where id = $1"))
+var _ = ginkgo.Describe("Tool", func() {
+	ginkgo.Context("rebind", func() {
+		ginkgo.It("mysql to postgres", func() {
+			gomega.Expect(database.Rebind("select * from table where id = ?")).To(gomega.Equal("select * from table where id = $1"))
 
-			Expect(database.Rebind("select * from table where id = ? and name = ?")).To(Equal("select * from table where id = $1 and name = $2"))
+			gomega.Expect(database.Rebind("select * from table where id = ? and name = ?")).To(gomega.Equal("select * from table where id = $1 and name = $2"))
 
-			Expect(database.Rebind("insert into table (a,b,c) values (?,?,?)")).To(Equal("insert into table (a,b,c) values ($1,$2,$3)"))
+			gomega.Expect(database.Rebind("insert into table (a,b,c) values (?,?,?)")).To(gomega.Equal("insert into table (a,b,c) values ($1,$2,$3)"))
 		})
 	})
 })

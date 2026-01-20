@@ -6,26 +6,26 @@ import (
 	"github.com/Jackson-soft/venus/database"
 
 	_ "github.com/go-sql-driver/mysql"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 )
 
 var db *database.Database
 
 func TestMysql(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Mysql Suite")
+	gomega.RegisterFailHandler(ginkgo.Fail)
+	ginkgo.RunSpecs(t, "Mysql Suite")
 }
 
-var _ = BeforeSuite(func() {
+var _ = ginkgo.BeforeSuite(func() {
 	dsn := "root:ruisi_112@tcp(127.0.0.1:3306)/ruisi"
 	var err error
 	db, err = database.OpenDB("mysql", dsn)
-	Expect(err).ShouldNot(HaveOccurred())
-	Expect(db).ShouldNot(BeNil())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
+	gomega.Expect(db).ShouldNot(gomega.BeNil())
 })
 
-var _ = AfterSuite(func() {
+var _ = ginkgo.AfterSuite(func() {
 	err := db.Close()
-	Expect(err).ShouldNot(HaveOccurred())
+	gomega.Expect(err).ShouldNot(gomega.HaveOccurred())
 })

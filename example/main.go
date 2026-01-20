@@ -15,7 +15,7 @@ func main() {
 
 	ch := make(chan int)
 	go func() {
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			go func(index int) {
 				v, ok := mm.Find(1)
 				log.Println(index, v, ok)
@@ -25,14 +25,11 @@ func main() {
 	}()
 
 	var num int
-	for {
-		select {
-		case n := <-ch:
-			num += n
-			if num == 99 {
-				fmt.Println(num)
-				os.Exit(0)
-			}
+	for n := range ch {
+		num += n
+		if num == 99 {
+			fmt.Println(num)
+			os.Exit(0)
 		}
 	}
 }
