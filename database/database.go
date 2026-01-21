@@ -63,18 +63,6 @@ func (d *Database) Reset(db *sql.DB, dsn string) {
 	d.dsn_ = dsn
 }
 
-func (d *Database) BeginTx() (*Tx, error) {
-	tx, err := d.conn_.Begin()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Tx{
-		tx_:       tx,
-		hasError_: false,
-	}, nil
-}
-
 func (d *Database) BeginTxCtx(ctx context.Context) (*Tx, error) {
 	tx, err := d.conn_.BeginTx(ctx, nil)
 	if err != nil {
