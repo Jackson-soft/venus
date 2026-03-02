@@ -57,6 +57,7 @@ func (h *Hashing) Del(keys ...string) {
 			delete(h.hashMap_, hash)
 		}
 	}
+
 	sort.Ints(h.keys_)
 }
 

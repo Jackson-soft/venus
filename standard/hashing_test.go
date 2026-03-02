@@ -1,33 +1,33 @@
 package standard_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	"github.com/Jackson-soft/venus/standard"
 )
 
-var _ = Describe("Hashing", func() {
-	It("hashing", func() {
+var _ = ginkgo.Describe("Hashing", func() {
+	ginkgo.It("hashing", func() {
 		h := standard.NewHashing(3, nil)
-		Expect(h).ShouldNot(BeNil())
+		gomega.Expect(h).ShouldNot(gomega.BeNil())
 
 		h.Add("11", "22", "33")
 
 		str := h.Get("1") // 33
-		Expect(str).ShouldNot(BeEmpty())
+		gomega.Expect(str).ShouldNot(gomega.BeEmpty())
 		str = h.Get("2") // 11
-		Expect(str).ShouldNot(BeEmpty())
+		gomega.Expect(str).ShouldNot(gomega.BeEmpty())
 		str = h.Get("3") // 33
-		Expect(str).ShouldNot(BeEmpty())
+		gomega.Expect(str).ShouldNot(gomega.BeEmpty())
 
 		h.Del("11")
 
 		str = h.Get("1")
-		Expect(str).ShouldNot(BeEmpty())
+		gomega.Expect(str).ShouldNot(gomega.BeEmpty())
 		str = h.Get("2")
-		Expect(str).ShouldNot(BeEmpty())
+		gomega.Expect(str).ShouldNot(gomega.BeEmpty())
 		str = h.Get("3")
-		Expect(str).ShouldNot(BeEmpty())
+		gomega.Expect(str).ShouldNot(gomega.BeEmpty())
 	})
 })

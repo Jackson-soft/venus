@@ -1,46 +1,43 @@
 package standard_test
 
 import (
-	"fmt"
-
 	"github.com/Jackson-soft/venus/standard"
-	. "github.com/onsi/ginkgo/v2"
-
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 )
 
-var _ = Describe("test set", func() {
-	Context("string set", func() {
+var _ = ginkgo.Describe("test set", func() {
+	ginkgo.Context("string set", func() {
 		s := standard.NewSet[string]()
 
-		It("test", func() {
+		ginkgo.It("test", func() {
 			aa := s.List()
 
-			Expect(len(aa)).Should(Equal(0))
+			gomega.Expect(aa).Should(gomega.BeEmpty())
 
 			s.Insert("e")
 
 			s.Insert("b")
 
 			array := s.List()
-			Expect(len(array)).Should(Equal(2))
+			gomega.Expect(array).Should(gomega.HaveLen(2))
 
 			// sarray := s.SortList()
 
 			s.Erase("b")
 
 			s.Clear()
-			Expect(s.Empty()).Should(BeTrue())
+			gomega.Expect(s.Empty()).Should(gomega.BeTrue())
 		})
 	})
 
-	Context("int set", func() {
+	ginkgo.Context("int set", func() {
 		s := standard.NewSet[int]()
 
-		It("test", func() {
+		ginkgo.It("test", func() {
 			aa := s.List()
 
-			Expect(len(aa)).Should(Equal(0))
+			gomega.Expect(aa).Should(gomega.BeEmpty())
 
 			s.Insert(1)
 
@@ -49,15 +46,15 @@ var _ = Describe("test set", func() {
 			s.Insert(2)
 
 			array := s.List()
-			Expect(len(array)).Should(Equal(3))
+			gomega.Expect(array).Should(gomega.HaveLen(3))
 
 			sarray := s.SortList()
-			fmt.Printf("%v\n", sarray)
+			gomega.Expect(sarray).Should(gomega.Equal([]int{1, 2, 4}))
 
 			s.Erase(4)
 
 			s.Clear()
-			Expect(s.Empty()).Should(BeTrue())
+			gomega.Expect(s.Empty()).Should(gomega.BeTrue())
 		})
 	})
 })

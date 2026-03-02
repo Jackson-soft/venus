@@ -22,8 +22,10 @@ func (r *RingBuffer[T]) Push(data T) bool {
 	if (r.write_+1)%r.size_ == r.read_ {
 		return false
 	}
+
 	r.element_[r.write_] = data
 	r.write_ = (r.write_ + 1) % r.size_
+
 	return true
 }
 
@@ -33,6 +35,7 @@ func (r *RingBuffer[T]) Pop() T {
 	if r.read_ != r.write_ {
 		r.read_ = (r.read_ + 1) % r.size_
 	}
+
 	return data
 }
 

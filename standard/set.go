@@ -2,6 +2,7 @@ package standard
 
 import (
 	"cmp"
+	"maps"
 	"slices"
 )
 
@@ -38,21 +39,13 @@ func (s *Set[T]) Empty() bool {
 }
 
 func (s *Set[T]) Clear() {
-	s.value_ = make(map[T]struct{})
+	clear(s.value_)
 }
 
 func (s *Set[T]) List() []T {
-	list := make([]T, s.Size())
-	i := 0
-	for key := range s.value_ {
-		list[i] = key
-		i++
-	}
-	return list
+	return slices.Collect(maps.Keys(s.value_))
 }
 
 func (s *Set[T]) SortList() []T {
-	list := s.List()
-	slices.Sort(list)
-	return list
+	return slices.Sorted(maps.Keys(s.value_))
 }

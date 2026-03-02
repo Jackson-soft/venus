@@ -24,7 +24,7 @@ var _ = Describe("RingBuffer", func() {
 	Context("full", func() {
 		It("some", func() {
 			buf := standard.NewRingBuf[int](3)
-			for i := 0; i < 3; i++ {
+			for i := range 3 {
 				buf.Push(i)
 			}
 

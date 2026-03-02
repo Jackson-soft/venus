@@ -23,7 +23,7 @@ func (m *Map[K, V]) Size() int {
 
 func (m *Map[K, V]) Clear() {
 	m.mutex_.Lock()
-	m.value_ = make(map[K]V)
+	clear(m.value_)
 	m.mutex_.Unlock()
 }
 
@@ -33,6 +33,7 @@ func (m *Map[K, V]) Insert(key K, value V) {
 	m.mutex_.Unlock()
 }
 
+//nolint:ireturn // V is a generic type parameter, not a concrete interface
 func (m *Map[K, V]) Find(key K) (V, bool) {
 	m.mutex_.RLock()
 	defer m.mutex_.RUnlock()
