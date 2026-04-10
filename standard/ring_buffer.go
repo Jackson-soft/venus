@@ -3,8 +3,8 @@ package standard
 // 环形缓冲
 type RingBuffer[T any] struct {
 	size_    int
-	write_   int // 读游标
-	read_    int // 写游标
+	write_   int // 写游标
+	read_    int // 读游标
 	element_ []T
 }
 
@@ -45,5 +45,9 @@ func (r *RingBuffer[T]) Size() int {
 }
 
 func (r *RingBuffer[T]) IsFull() bool {
+	return (r.write_+1)%r.size_ == r.read_
+}
+
+func (r *RingBuffer[T]) IsEmpty() bool {
 	return r.read_ == r.write_
 }

@@ -10,7 +10,7 @@ import (
 
 func TestRegister(t *testing.T) {
 	tt := timer.NewTimer(time.Second, 5)
-	tt.Register(timer.Single, 3*time.Second, func(args interface{}) {
+	tt.Register(timer.Single, 3*time.Second, func(args any) {
 		fmt.Println(args)
 	}, "fsdfsdfsa")
 }

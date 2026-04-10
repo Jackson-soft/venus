@@ -21,14 +21,14 @@ func RemoveElements[T comparable](source []T, toRemove []T) []T {
 		return source
 	}
 
-	removeMap := make(map[T]bool, len(toRemove))
+	removeMap := make(map[T]struct{}, len(toRemove))
 	for _, item := range toRemove {
-		removeMap[item] = true
+		removeMap[item] = struct{}{}
 	}
 
 	result := make([]T, 0, len(source))
 	for _, item := range source {
-		if !removeMap[item] {
+		if _, ok := removeMap[item]; !ok {
 			result = append(result, item)
 		}
 	}

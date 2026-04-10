@@ -3,7 +3,7 @@ package httpkit
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -47,11 +47,12 @@ func WebDo(base *WebBase) ([]byte, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
-	}
-
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("%s: %s", resp.Status, body)
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

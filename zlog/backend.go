@@ -50,7 +50,7 @@ func NewInciseFile(filePath, fileLink, prefix string, maxSize int64) (*InciseFil
 
 	var err error
 	if _, err = os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		if err = os.Mkdir(filePath, os.ModeDir|os.ModePerm); err != nil {
+		if err = os.MkdirAll(filePath, os.ModeDir|os.ModePerm); err != nil {
 			return nil, err
 		}
 	}
@@ -72,7 +72,7 @@ func NewInciseFile(filePath, fileLink, prefix string, maxSize int64) (*InciseFil
 	if maxSize == 0 {
 		b.maxFileSize = defaultMaxSize
 	} else {
-		b.maxFileSize = maxSize * 1014 * 1024
+		b.maxFileSize = maxSize * 1024 * 1024
 	}
 
 	if err = b.createFile(); err != nil {

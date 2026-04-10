@@ -35,7 +35,7 @@ type (
 
 		timeWheel *TimeWheel
 		timerMap  sync.Map // 存储定时器id对应的槽位置
-		stop      chan bool
+		stop      chan struct{}
 	}
 
 	// TimerType 定时器类型
@@ -74,7 +74,7 @@ func NewTimer(tick time.Duration, num int) *Timer {
 
 	t.timeWheel.currentPos = 0
 
-	t.stop = make(chan bool)
+	t.stop = make(chan struct{})
 
 	for i := range t.timeWheel.slotNum {
 		t.timeWheel.slots[i] = list.New()
@@ -178,22 +178,26 @@ func (t *Timer) Reset(timerID string) error {
 
 // Stop 停止
 func (t *Timer) Stop() {
-	t.stop <- true
+	close(t.stop)
 }
 
 // 获取定时器在槽中的位置, 时间轮需要转动的圈数
 func (t *Timer) getPositionAndCircle(d time.Duration) (pos int, circle int) {
-	delaySeconds := int(d.Seconds())
-	intervalSeconds := int(t.tick.Seconds())
+	delayTicks := int(d / t.tick)
+	if delayTicks < 1 {
+		delayTicks = 1
+	}
 
-	pos = (t.timeWheel.currentPos + delaySeconds/intervalSeconds) % t.timeWheel.slotNum
+	pos = (t.timeWheel.currentPos + delayTicks) % t.timeWheel.slotNum
 
-	circle = delaySeconds / intervalSeconds / t.timeWheel.slotNum
+	circle = delayTicks / t.timeWheel.slotNum
 
 	return pos, circle
 }
 
 func (t *Timer) step() {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
 	l := t.timeWheel.slots[t.timeWheel.currentPos]
 	for e := l.Front(); e != nil; {
 		job := e.Value.(*Node)
@@ -234,10 +238,9 @@ func (t *Timer) run() {
 		select {
 		case <-t.ticker.C:
 			t.step()
-		case stop := <-t.stop:
-			if stop {
-				t.ticker.Stop()
-			}
+		case <-t.stop:
+			t.ticker.Stop()
+			return
 		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"hash/crc32"
 	"sort"
 	"strconv"
+	"sync"
 )
 
 // 一致性hash
@@ -12,6 +13,7 @@ type (
 	HashFunc func(data []byte) uint32
 
 	Hashing struct {
+		mu        sync.RWMutex
 		hash_     HashFunc       // 自定义哈希算法，默认是crc32.ChecksumIEEE
 		replicas_ int            // 虚拟节点倍数
 		keys_     []int          // 哈希环,Sorted
@@ -34,6 +36,8 @@ func NewHashing(replicas int, fn HashFunc) *Hashing {
 
 // Add adds some keys to the hash.
 func (h *Hashing) Add(keys ...string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
 	for i := range keys {
 		for n := range h.replicas_ {
 			hash := int(h.hash_([]byte(strconv.Itoa(n) + keys[i])))
@@ -45,6 +49,8 @@ func (h *Hashing) Add(keys ...string) {
 }
 
 func (h *Hashing) Del(keys ...string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
 	for i := range keys {
 		for n := range h.replicas_ {
 			hash := int(h.hash_([]byte(strconv.Itoa(n) + keys[i])))
@@ -63,6 +69,8 @@ func (h *Hashing) Del(keys ...string) {
 
 // Get gets the closest item in the hash to the provided key.
 func (h *Hashing) Get(key string) string {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
 	if len(h.keys_) == 0 {
 		return ""
 	}

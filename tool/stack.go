@@ -20,7 +20,7 @@ func PanicTrace(kb int) []byte {
 	e := []byte("\ngoroutine ")
 	line := []byte("\n")
 	stack := make([]byte, kb<<bitSize) // 4KB
-	length := runtime.Stack(stack, true)
+	length := runtime.Stack(stack, false)
 	start := bytes.Index(stack, s)
 	stack = stack[start:length]
 	start = bytes.Index(stack, line) + 1

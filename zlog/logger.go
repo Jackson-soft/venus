@@ -13,7 +13,7 @@ type Level uint8
 const (
 	TraceLevel Level = iota
 	DebugLevel
-	InforLevel
+	InfoLevel
 	WarnLevel
 	ErrorLevel
 	FatalLevel
@@ -24,7 +24,7 @@ var (
 	levelMap = map[string]Level{
 		"trace": TraceLevel,
 		"debug": DebugLevel,
-		"infor": InforLevel,
+		"info":  InfoLevel,
 		"warn":  WarnLevel,
 		"error": ErrorLevel,
 		"fatal": FatalLevel,
@@ -33,7 +33,7 @@ var (
 	stringMap = map[Level]string{
 		TraceLevel: "trace",
 		DebugLevel: "debug",
-		InforLevel: "infor",
+		InfoLevel:  "info",
 		WarnLevel:  "warn",
 		ErrorLevel: "error",
 		FatalLevel: "fatal",
@@ -52,7 +52,7 @@ func ParseLevel(lvl string) (Level, error) {
 		return levelMap[lvl], nil
 	}
 
-	return NULLLevel, fmt.Errorf("not a valid logrus Level: %q", lvl)
+	return NULLLevel, fmt.Errorf("not a valid log level: %q", lvl)
 }
 
 // ZLog is a log
@@ -120,8 +120,11 @@ func (z *ZLog) run() {
 	for {
 		select {
 		case buf := <-z.buffer:
-			for i := range z.backends {
-				z.backends[i].Write(buf)
+			z.mutex.Lock()
+			bs := z.backends
+			z.mutex.Unlock()
+			for i := range bs {
+				bs[i].Write(buf)
 			}
 		case operate := <-z.operate:
 			if operate == 1 {
@@ -144,8 +147,8 @@ func (z *ZLog) run() {
 // Output 输出
 func (z *ZLog) output(level Level, msg string) {
 	z.mutex.Lock()
-	defer z.mutex.Unlock()
 	buf := z.formatter.Format(level, msg)
+	z.mutex.Unlock()
 	if len(buf) > 0 {
 		z.buffer <- buf
 	}
@@ -169,7 +172,7 @@ func (z *ZLog) Debugf(format string, args ...interface{}) {
 
 // Infof logs a message at level Info on the standard logger.
 func (z *ZLog) Infof(format string, args ...interface{}) {
-	z.output(InforLevel, fmt.Sprintf(format, args...))
+	z.output(InfoLevel, fmt.Sprintf(format, args...))
 }
 
 // Warnf logs a message at level Warn on the standard logger.
@@ -185,6 +188,7 @@ func (z *ZLog) Errorf(format string, args ...interface{}) {
 // Fatalf logs a message at level Fatal on the standard logger.
 func (z *ZLog) Fatalf(format string, args ...interface{}) {
 	z.output(FatalLevel, fmt.Sprintf(format, args...))
+	z.Sync()
 	os.Exit(1)
 }
 
@@ -195,7 +199,7 @@ func (z *ZLog) Debugln(args ...interface{}) {
 
 // Infoln logs a message at level Info on the standard logger.
 func (z *ZLog) Infoln(args ...interface{}) {
-	z.output(InforLevel, fmt.Sprint(args...))
+	z.output(InfoLevel, fmt.Sprint(args...))
 }
 
 // Warnln logs a message at level Warn on the standard logger.

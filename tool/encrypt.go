@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"crypto/sha3"
 	"encoding/hex"
+	"errors"
 )
 
 func Sha3(txt string) string {
@@ -22,11 +23,18 @@ func PKCS7Padding(ciphertext []byte, blockSize int) []byte {
 	return append(ciphertext, padtext...)
 }
 
-func PKCS7UnPadding(origData []byte) []byte {
+func PKCS7UnPadding(origData []byte) ([]byte, error) {
 	length := len(origData)
-	unpadding := int(origData[length-1])
+	if length == 0 {
+		return nil, errors.New("empty plaintext")
+	}
 
-	return origData[:(length - unpadding)]
+	unpadding := int(origData[length-1])
+	if unpadding < 1 || unpadding > aes.BlockSize || unpadding > length {
+		return nil, errors.New("invalid padding size")
+	}
+
+	return origData[:(length - unpadding)], nil
 }
 
 // AesEncrypt 加密函数
@@ -74,7 +82,11 @@ func AesDecrypt(ciphertext string, key []byte) (string, error) {
 
 	plaintext := make([]byte, len(decodeData))
 	blockMode.CryptBlocks(plaintext, decodeData)
-	plaintext = PKCS7UnPadding(plaintext)
 
-	return string(plaintext), nil
+	unpadded, err := PKCS7UnPadding(plaintext)
+	if err != nil {
+		return "", err
+	}
+
+	return string(unpadded), nil
 }

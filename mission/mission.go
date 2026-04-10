@@ -98,23 +98,20 @@ func (e *EventBus) Producer(handler any, params ...any) error {
 		task.Params = append(task.Params, reflect.ValueOf(params[i]))
 	}
 
-	e.taskQueue_ <- task
-
-	return nil
+	select {
+	case e.taskQueue_ <- task:
+		return nil
+	case <-e.close_:
+		e.taskPool_.Put(task)
+		return ErrBusClosed
+	}
 }
 
 func (e *EventBus) Close() {
-	e.close_ <- struct{}{}
-
-	close(e.taskQueue_)
 	close(e.close_)
 }
 
 func (e *EventBus) run() {
-	defer func() {
-		_ = recover()
-	}()
-
 	for {
 		select {
 		case <-e.close_:
@@ -130,6 +127,9 @@ func (e *EventBus) run() {
 }
 
 func (e *EventBus) consumer(task *Task) {
+	defer func() {
+		recover()
+		e.taskPool_.Put(task)
+	}()
 	task.Handler.Call(task.Params)
-	e.taskPool_.Put(task)
 }
