@@ -26,7 +26,7 @@ func BenchmarkBuf(b *testing.B) {
 	fun := func(arg int) {
 		_, _ = fmt.Println(arg)
 	}
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		_ = mission.Instance().Producer(fun, i)
 	}
 }

@@ -41,8 +41,8 @@ var _ = Describe("RingBuffer extended", func() {
 		buf := standard.NewRingBuf[int](3) // capacity = 2
 		buf.Push(1)
 		buf.Push(2)
-		buf.Pop()    // removes 1
-		buf.Push(3)  // wraps around
+		buf.Pop()   // removes 1
+		buf.Push(3) // wraps around
 		Expect(buf.Pop()).Should(Equal(2))
 		Expect(buf.Pop()).Should(Equal(3))
 		Expect(buf.IsEmpty()).Should(BeTrue())

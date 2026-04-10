@@ -2,7 +2,7 @@ package standard
 
 import (
 	"hash/crc32"
-	"sort"
+	"slices"
 	"strconv"
 	"sync"
 )
@@ -14,10 +14,10 @@ type (
 
 	Hashing struct {
 		mu        sync.RWMutex
-		hash_     HashFunc       // 自定义哈希算法，默认是crc32.ChecksumIEEE
-		replicas_ int            // 虚拟节点倍数
-		keys_     []int          // 哈希环,Sorted
-		hashMap_  map[int]string // 虚拟节点与真实节点的映射表，键是虚拟节点的哈希值，值是真实节点的名称
+		hash_     HashFunc          // 自定义哈希算法，默认是crc32.ChecksumIEEE
+		replicas_ int               // 虚拟节点倍数
+		keys_     []uint32          // 哈希环,Sorted
+		hashMap_  map[uint32]string // 虚拟节点与真实节点的映射表，键是虚拟节点的哈希值，值是真实节点的名称
 	}
 )
 
@@ -29,8 +29,7 @@ func NewHashing(replicas int, fn HashFunc) *Hashing {
 	return &Hashing{
 		hash_:     fn,
 		replicas_: replicas,
-		keys_:     make([]int, 0),
-		hashMap_:  make(map[int]string),
+		hashMap_:  make(map[uint32]string),
 	}
 }
 
@@ -38,48 +37,51 @@ func NewHashing(replicas int, fn HashFunc) *Hashing {
 func (h *Hashing) Add(keys ...string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	for i := range keys {
+
+	for _, key := range keys {
 		for n := range h.replicas_ {
-			hash := int(h.hash_([]byte(strconv.Itoa(n) + keys[i])))
+			hash := h.hash_([]byte(strconv.Itoa(n) + key))
 			h.keys_ = append(h.keys_, hash)
-			h.hashMap_[hash] = keys[i]
+			h.hashMap_[hash] = key
 		}
 	}
-	sort.Ints(h.keys_)
+
+	slices.Sort(h.keys_)
 }
 
+// Del removes keys from the hash.
 func (h *Hashing) Del(keys ...string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	for i := range keys {
+
+	remove := make(map[uint32]struct{}, len(keys)*h.replicas_)
+
+	for _, key := range keys {
 		for n := range h.replicas_ {
-			hash := int(h.hash_([]byte(strconv.Itoa(n) + keys[i])))
-			for m := range h.keys_ {
-				if h.keys_[m] == hash {
-					h.keys_ = append(h.keys_[:m], h.keys_[m+1:]...)
-					break
-				}
-			}
+			hash := h.hash_([]byte(strconv.Itoa(n) + key))
+			remove[hash] = struct{}{}
+
 			delete(h.hashMap_, hash)
 		}
 	}
 
-	sort.Ints(h.keys_)
+	h.keys_ = slices.DeleteFunc(h.keys_, func(k uint32) bool {
+		_, ok := remove[k]
+		return ok
+	})
 }
 
 // Get gets the closest item in the hash to the provided key.
 func (h *Hashing) Get(key string) string {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	if len(h.keys_) == 0 {
 		return ""
 	}
 
-	hash := int(h.hash_([]byte(key)))
-	// Binary search for appropriate replica.
-	idx := sort.Search(len(h.keys_), func(i int) bool {
-		return h.keys_[i] >= hash
-	})
+	hash := h.hash_([]byte(key))
+	idx, _ := slices.BinarySearch(h.keys_, hash)
 
 	return h.hashMap_[h.keys_[idx%len(h.keys_)]]
 }

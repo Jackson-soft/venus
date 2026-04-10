@@ -45,7 +45,7 @@ func (level Level) String() string {
 	return stringMap[level]
 }
 
-// ParseLevel takes a string level and returns the Logrus log level constant.
+// ParseLevel takes a string level and returns the log level constant.
 func ParseLevel(lvl string) (Level, error) {
 	lvl = strings.ToLower(lvl)
 	if _, ok := levelMap[lvl]; ok {
@@ -161,59 +161,59 @@ func (z *ZLog) WithFields(fields Fields) *ZLog {
 }
 
 // Tracef logs a message at level Info on the standard logger.
-func (z *ZLog) Tracef(format string, args ...interface{}) {
+func (z *ZLog) Tracef(format string, args ...any) {
 	z.output(TraceLevel, fmt.Sprintf(format, args...))
 }
 
 // Debugf logs a message at level Debug on the standard logger.
-func (z *ZLog) Debugf(format string, args ...interface{}) {
+func (z *ZLog) Debugf(format string, args ...any) {
 	z.output(DebugLevel, fmt.Sprintf(format, args...))
 }
 
 // Infof logs a message at level Info on the standard logger.
-func (z *ZLog) Infof(format string, args ...interface{}) {
+func (z *ZLog) Infof(format string, args ...any) {
 	z.output(InfoLevel, fmt.Sprintf(format, args...))
 }
 
 // Warnf logs a message at level Warn on the standard logger.
-func (z *ZLog) Warnf(format string, args ...interface{}) {
+func (z *ZLog) Warnf(format string, args ...any) {
 	z.output(WarnLevel, fmt.Sprintf(format, args...))
 }
 
 // Errorf logs a message at level Error on the standard logger.
-func (z *ZLog) Errorf(format string, args ...interface{}) {
+func (z *ZLog) Errorf(format string, args ...any) {
 	z.output(ErrorLevel, fmt.Sprintf(format, args...))
 }
 
 // Fatalf logs a message at level Fatal on the standard logger.
-func (z *ZLog) Fatalf(format string, args ...interface{}) {
+func (z *ZLog) Fatalf(format string, args ...any) {
 	z.output(FatalLevel, fmt.Sprintf(format, args...))
 	z.Sync()
 	os.Exit(1)
 }
 
 // Debugln logs a message at level Debug on the standard logger.
-func (z *ZLog) Debugln(args ...interface{}) {
+func (z *ZLog) Debugln(args ...any) {
 	z.output(DebugLevel, fmt.Sprint(args...))
 }
 
 // Infoln logs a message at level Info on the standard logger.
-func (z *ZLog) Infoln(args ...interface{}) {
+func (z *ZLog) Infoln(args ...any) {
 	z.output(InfoLevel, fmt.Sprint(args...))
 }
 
 // Warnln logs a message at level Warn on the standard logger.
-func (z *ZLog) Warnln(args ...interface{}) {
+func (z *ZLog) Warnln(args ...any) {
 	z.output(WarnLevel, fmt.Sprint(args...))
 }
 
 // Errorln logs a message at level Error on the standard logger.
-func (z *ZLog) Errorln(args ...interface{}) {
+func (z *ZLog) Errorln(args ...any) {
 	z.output(ErrorLevel, fmt.Sprint(args...))
 }
 
 // Fatalln logs a message at level Fatal on the standard logger.
-func (z *ZLog) Fatalln(args ...interface{}) {
+func (z *ZLog) Fatalln(args ...any) {
 	z.output(FatalLevel, fmt.Sprint(args...))
 	os.Exit(1)
 }

@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-// 多线程队列
+// Queue 多线程队列
 type Queue[T any] struct {
 	mutex_ sync.RWMutex
 	size_  uint     // 容量
@@ -25,7 +25,7 @@ func NewQueue[T any]() *Queue[T] {
 	}
 }
 
-// 插入
+// Push 插入
 func (q *Queue[T]) Push(v T) {
 	n := &node[T]{
 		value_: v,
@@ -38,12 +38,15 @@ func (q *Queue[T]) Push(v T) {
 	} else {
 		q.tail_.next_ = n
 	}
+
 	q.tail_ = n
 	q.size_++
 	q.mutex_.Unlock()
 }
 
-// 访问头部
+// Front 访问头部
+//
+//nolint:ireturn // T is a generic type parameter, not a concrete interface
 func (q *Queue[T]) Front() (T, bool) {
 	q.mutex_.RLock()
 	defer q.mutex_.RUnlock()
@@ -52,10 +55,13 @@ func (q *Queue[T]) Front() (T, bool) {
 	if q.size_ == 0 {
 		return value, false
 	}
+
 	return q.head_.value_, true
 }
 
-// 弹出头部，并删除
+// Pop 弹出头部，并删除
+//
+//nolint:ireturn // T is a generic type parameter, not a concrete interface
 func (q *Queue[T]) Pop() (T, bool) {
 	q.mutex_.Lock()
 	defer q.mutex_.Unlock()
@@ -69,10 +75,11 @@ func (q *Queue[T]) Pop() (T, bool) {
 	q.head_ = n.next_
 
 	q.size_--
+
 	return n.value_, true
 }
 
-// 删除头部
+// Erase 删除头部
 func (q *Queue[T]) Erase() {
 	q.mutex_.Lock()
 	defer q.mutex_.Unlock()
@@ -85,8 +92,10 @@ func (q *Queue[T]) Erase() {
 	}
 }
 
+// Size 返回队列长度
 func (q *Queue[T]) Size() uint {
 	q.mutex_.RLock()
 	defer q.mutex_.RUnlock()
+
 	return q.size_
 }

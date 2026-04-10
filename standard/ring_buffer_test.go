@@ -31,9 +31,9 @@ var _ = Describe("RingBuffer", func() {
 			Expect(buf.Pop()).Should(Equal(0))
 
 			buf.Push(4)
+			_ = buf.Pop()
+			_ = buf.Pop()
 			tt := buf.Pop()
-			tt = buf.Pop()
-			tt = buf.Pop()
 			GinkgoWriter.Println(tt)
 			buf.Push(6)
 			tt = buf.Pop()

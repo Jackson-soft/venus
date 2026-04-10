@@ -6,7 +6,7 @@ import (
 	"slices"
 )
 
-// 不重复切片
+// Set 不重复集合
 type Set[T cmp.Ordered] struct {
 	value_ map[T]struct{}
 }

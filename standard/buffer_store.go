@@ -101,11 +101,11 @@ func makeSlicePointer(size int) *[]byte {
 }
 
 func (p *Pool) findPool(size int) *sizedPool {
-	if size > p.maxSize {
+	if size > p.maxSize || size < 0 {
 		return nil
 	}
 
-	div, rem := bits.Div64(0, uint64(size), uint64(p.minSize))
+	div, rem := bits.Div64(0, uint64(size), uint64(p.minSize)) //nolint:gosec // size and minSize are validated positive
 	idx := bits.Len64(div)
 
 	if rem == 0 && div != 0 && (div&(div-1)) == 0 {

@@ -9,6 +9,11 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	ErrEmptyID    = errors.New("id is empty")
+	ErrIDNotExist = errors.New("id does not exist")
+)
+
 // Node 时间轮槽的链表节点
 type (
 	Node struct {
@@ -120,12 +125,12 @@ func (t *Timer) Remove(timerID string) error {
 	defer t.mutex.Unlock()
 
 	if timerID == "" {
-		return errors.New("id is nil")
+		return ErrEmptyID
 	}
 
 	pos, ok := t.timerMap.Load(timerID)
 	if !ok {
-		return errors.New("id do not exist")
+		return ErrIDNotExist
 	}
 
 	l := t.timeWheel.slots[pos.(int)]
@@ -151,12 +156,12 @@ func (t *Timer) Reset(timerID string) error {
 	defer t.mutex.Unlock()
 
 	if timerID == "" {
-		return errors.New("id is nil")
+		return ErrEmptyID
 	}
 
 	pos, ok := t.timerMap.Load(timerID)
 	if !ok {
-		return errors.New("id do not exist")
+		return ErrIDNotExist
 	}
 
 	l := t.timeWheel.slots[pos.(int)]
@@ -223,11 +228,7 @@ func (t *Timer) step() {
 		e = next
 	}
 
-	if t.timeWheel.currentPos == t.timeWheel.slotNum-1 {
-		t.timeWheel.currentPos = 0
-	} else {
-		t.timeWheel.currentPos++
-	}
+	t.timeWheel.currentPos = (t.timeWheel.currentPos + 1) % t.timeWheel.slotNum
 }
 
 // Run 主循环

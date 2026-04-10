@@ -52,56 +52,56 @@ func WithFields(fields Fields) *ZLog {
 }
 
 // Tracef logs a message at level Info on the standard logger.
-func Tracef(format string, args ...interface{}) {
+func Tracef(format string, args ...any) {
 	std.Tracef(format, args...)
 }
 
 // Debugf logs a message at level Debug on the standard logger.
-func Debugf(format string, args ...interface{}) {
+func Debugf(format string, args ...any) {
 	std.Debugf(format, args...)
 }
 
 // Infof logs a message at level Info on the standard logger.
-func Infof(format string, args ...interface{}) {
+func Infof(format string, args ...any) {
 	std.Infof(format, args...)
 }
 
 // Warnf logs a message at level Warn on the standard logger.
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	std.Warnf(format, args...)
 }
 
 // Errorf logs a message at level Error on the standard logger.
-func Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...any) {
 	std.Errorf(format, args...)
 }
 
 // Fatalf logs a message at level Fatal on the standard logger.
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	std.Fatalf(format, args...)
 }
 
 // Debugln logs a message at level Debug on the standard logger.
-func Debugln(args ...interface{}) {
+func Debugln(args ...any) {
 	std.Debugln(args...)
 }
 
 // Infoln logs a message at level Info on the standard logger.
-func Infoln(args ...interface{}) {
+func Infoln(args ...any) {
 	std.Infoln(args...)
 }
 
 // Warnln logs a message at level Warn on the standard logger.
-func Warnln(args ...interface{}) {
+func Warnln(args ...any) {
 	std.Warnln(args...)
 }
 
 // Errorln logs a message at level Error on the standard logger.
-func Errorln(args ...interface{}) {
+func Errorln(args ...any) {
 	std.Errorln(args...)
 }
 
 // Fatalln logs a message at level Fatal on the standard logger.
-func Fatalln(args ...interface{}) {
+func Fatalln(args ...any) {
 	std.Fatalln(args...)
 }

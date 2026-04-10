@@ -9,7 +9,6 @@ type Map[K comparable, V any] struct {
 
 func NewMap[K comparable, V any]() Map[K, V] {
 	return Map[K, V]{
-		mutex_: sync.RWMutex{},
 		value_: make(map[K]V),
 	}
 }
@@ -37,7 +36,9 @@ func (m *Map[K, V]) Insert(key K, value V) {
 func (m *Map[K, V]) Find(key K) (V, bool) {
 	m.mutex_.RLock()
 	defer m.mutex_.RUnlock()
+
 	v, ok := m.value_[key]
+
 	return v, ok
 }
 

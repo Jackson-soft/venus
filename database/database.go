@@ -25,10 +25,8 @@ func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
 		dsn_:  dsn,
 	}
 
-	if len(ops) > 0 {
-		for _, op := range ops {
-			op(database)
-		}
+	for _, op := range ops {
+		op(database)
 	}
 
 	return database, nil

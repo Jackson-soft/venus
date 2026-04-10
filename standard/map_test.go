@@ -1,7 +1,6 @@
 package standard_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Jackson-soft/venus/standard"
@@ -53,7 +52,7 @@ var _ = Describe("Map", func() {
 			mm.Insert(2, 55)
 
 			mm.Range(func(key, value int64) bool {
-				fmt.Println(key, value)
+				GinkgoWriter.Println(key, value)
 				return true
 			})
 		})
@@ -63,7 +62,7 @@ var _ = Describe("Map", func() {
 func BenchmarkInsert(b *testing.B) {
 	mm := standard.NewMap[int, int]()
 
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		mm.Insert(i, i)
 	}
 }

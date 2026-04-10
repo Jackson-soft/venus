@@ -1,6 +1,6 @@
 package standard
 
-// 环形缓冲
+// RingBuffer 环形缓冲
 type RingBuffer[T any] struct {
 	size_    int
 	write_   int // 写游标
@@ -17,7 +17,7 @@ func NewRingBuf[T any](size int) *RingBuffer[T] {
 	}
 }
 
-// 入队
+// Push 入队
 func (r *RingBuffer[T]) Push(data T) bool {
 	if (r.write_+1)%r.size_ == r.read_ {
 		return false
@@ -29,9 +29,12 @@ func (r *RingBuffer[T]) Push(data T) bool {
 	return true
 }
 
-// 出队
+// Pop 出队
+//
+//nolint:ireturn // T is a generic type parameter, not a concrete interface
 func (r *RingBuffer[T]) Pop() T {
 	data := r.element_[r.read_]
+
 	if r.read_ != r.write_ {
 		r.read_ = (r.read_ + 1) % r.size_
 	}
@@ -39,7 +42,7 @@ func (r *RingBuffer[T]) Pop() T {
 	return data
 }
 
-// 实际容纳的数据量
+// Size 实际容纳的数据量
 func (r *RingBuffer[T]) Size() int {
 	return (r.write_ - r.read_ + r.size_) % r.size_
 }
