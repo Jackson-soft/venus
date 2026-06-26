@@ -28,6 +28,14 @@ var _ = ginkgo.Describe("test set", func() {
 
 			s.Clear()
 			gomega.Expect(s.Empty()).Should(gomega.BeTrue())
+
+			s.Reset("x", "y", "z")
+			gomega.Expect(s.Size()).Should(gomega.Equal(3))
+			gomega.Expect(s.Exist("x")).Should(gomega.BeTrue())
+			gomega.Expect(s.Exist("e")).Should(gomega.BeFalse())
+
+			s.Reset()
+			gomega.Expect(s.Empty()).Should(gomega.BeTrue())
 		})
 	})
 

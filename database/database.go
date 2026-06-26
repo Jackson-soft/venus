@@ -103,6 +103,30 @@ func (d *Database) ExecContext(ctx context.Context, query string, args ...any) (
 	return res.RowsAffected()
 }
 
+func (d *Database) PrepareCtx(ctx context.Context, query string, args ...any) (int64, error) {
+	stmt, err := d.conn_.PrepareContext(ctx, query)
+	if err != nil {
+		return -1, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.ExecContext(ctx, args...)
+	if err != nil {
+		return -1, err
+	}
+
+	return res.RowsAffected()
+}
+
+func (d *Database) ExecCtx(ctx context.Context, query string, args ...any) (int64, error) {
+	result, err := d.conn_.ExecContext(ctx, query, args...)
+	if err != nil {
+		return -1, err
+	}
+
+	return result.RowsAffected()
+}
+
 func (d *Database) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
 	stmt, err := d.conn_.PrepareContext(ctx, query)
 	if err != nil {
