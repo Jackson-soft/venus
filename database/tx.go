@@ -10,6 +10,18 @@ type Tx struct {
 	hasError_ bool // 有一些错误 - -
 }
 
+func (d *Database) BeginTxCtx(ctx context.Context) (*Tx, error) {
+	tx, err := d.conn().BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Tx{
+		tx_:       tx,
+		hasError_: false,
+	}, nil
+}
+
 func (t *Tx) Close() error {
 	if t.hasError_ {
 		return t.tx_.Rollback()
@@ -28,49 +40,37 @@ func (t *Tx) HasError() {
 }
 
 func (t *Tx) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := t.tx_.PrepareContext(ctx, query)
+	res, err := t.tx_.ExecContext(ctx, query, args...)
 	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	return res.LastInsertId()
 }
 
 func (t *Tx) ExecContext(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := t.tx_.PrepareContext(ctx, query)
+	res, err := t.tx_.ExecContext(ctx, query, args...)
 	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	return res.RowsAffected()
 }
 
 func (t *Tx) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
-	stmt, err := t.tx_.PrepareContext(ctx, query)
+	rows, err := t.tx_.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return stmtMapCtx(ctx, stmt, args...)
+	return rowMap(rows)
 }
 
 func (t *Tx) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
-	stmt, err := t.tx_.PrepareContext(ctx, query)
+	rows, err := t.tx_.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return stmtMapSliceCtx(ctx, stmt, args...)
+	return rowMapSlice(rows)
 }

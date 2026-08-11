@@ -3,11 +3,13 @@ package database
 import (
 	"context"
 	"database/sql"
+	"sync"
 )
 
 // 标准库的数据库简单封装
 
 type Database struct {
+	mu_   sync.RWMutex
 	conn_ *sql.DB
 	name_ string
 	dsn_  string
@@ -41,15 +43,15 @@ func NewDB(driverName string, db *sql.DB) *Database {
 }
 
 func (d *Database) Ping(ctx context.Context) error {
-	return d.conn_.PingContext(ctx)
+	return d.conn().PingContext(ctx)
 }
 
 func (d *Database) Close() error {
-	return d.conn_.Close()
+	return d.conn().Close()
 }
 
 func (d *Database) Client() *sql.DB {
-	return d.conn_
+	return d.conn()
 }
 
 func (d *Database) Reset(db *sql.DB, dsn string) {
@@ -57,90 +59,52 @@ func (d *Database) Reset(db *sql.DB, dsn string) {
 		return
 	}
 
+	d.mu_.Lock()
+	defer d.mu_.Unlock()
+
 	d.conn_ = db
 	d.dsn_ = dsn
 }
 
-func (d *Database) BeginTxCtx(ctx context.Context) (*Tx, error) {
-	tx, err := d.conn_.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Tx{
-		tx_:       tx,
-		hasError_: false,
-	}, nil
-}
-
 func (d *Database) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := d.conn_.PrepareContext(ctx, query)
+	res, err := d.conn().ExecContext(ctx, query, args...)
 	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	return res.LastInsertId()
 }
 
 func (d *Database) ExecContext(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := d.conn_.PrepareContext(ctx, query)
+	res, err := d.conn().ExecContext(ctx, query, args...)
 	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
-		return -1, err
+		return 0, err
 	}
 
 	return res.RowsAffected()
-}
-
-func (d *Database) PrepareCtx(ctx context.Context, query string, args ...any) (int64, error) {
-	stmt, err := d.conn_.PrepareContext(ctx, query)
-	if err != nil {
-		return -1, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
-		return -1, err
-	}
-
-	return res.RowsAffected()
-}
-
-func (d *Database) ExecCtx(ctx context.Context, query string, args ...any) (int64, error) {
-	result, err := d.conn_.ExecContext(ctx, query, args...)
-	if err != nil {
-		return -1, err
-	}
-
-	return result.RowsAffected()
 }
 
 func (d *Database) QueryMapContext(ctx context.Context, query string, args ...any) (map[string]any, error) {
-	stmt, err := d.conn_.PrepareContext(ctx, query)
+	rows, err := d.conn().QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return stmtMapCtx(ctx, stmt, args...)
+	return rowMap(rows)
 }
 
 func (d *Database) QueryMapSliceContext(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
-	stmt, err := d.conn_.PrepareContext(ctx, query)
+	rows, err := d.conn().QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return stmtMapSliceCtx(ctx, stmt, args...)
+	return rowMapSlice(rows)
+}
+
+func (d *Database) conn() *sql.DB {
+	d.mu_.RLock()
+	defer d.mu_.RUnlock()
+
+	return d.conn_
 }

@@ -4,25 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"regexp"
+	"strings"
 )
-
-var rebindRe = regexp.MustCompile(`\?`)
 
 // 将mysql的占位符转换为postgres的占位符
 func Rebind(query string) string {
-	// 使用正则表达式匹配所有的问号
-	index := 1
+	var b strings.Builder
 
-	// 使用替换函数来替换每个问号
-	result := rebindRe.ReplaceAllStringFunc(query, func(_ string) string {
-		placeholder := fmt.Sprintf("$%d", index)
-		index++
+	n := 1
 
-		return placeholder
-	})
+	for _, ch := range query {
+		if ch == '?' {
+			fmt.Fprintf(&b, "$%d", n)
+			n++
+		} else {
+			b.WriteRune(ch)
+		}
+	}
 
-	return result
+	return b.String()
 }
 
 func rowMap(rows *sql.Rows) (map[string]any, error) {
@@ -65,17 +65,6 @@ func rowMap(rows *sql.Rows) (map[string]any, error) {
 	return result, nil
 }
 
-func stmtMapCtx(ctx context.Context, stmt *sql.Stmt, args ...any) (map[string]any, error) {
-	defer stmt.Close()
-
-	rows, err := stmt.QueryContext(ctx, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return rowMap(rows)
-}
-
 func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 	defer rows.Close()
 
@@ -85,7 +74,8 @@ func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 	}
 
 	values := make([]any, len(cols))
-	results := make([]map[string]any, 0)
+
+	var results []map[string]any
 
 	ptrs := make([]any, len(cols))
 	for i := range values {
@@ -119,8 +109,6 @@ func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 }
 
 func stmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
-	defer stmt.Close()
-
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, err
