@@ -102,6 +102,10 @@ func (d *Database) QueryMapSliceContext(ctx context.Context, query string, args 
 	return rowMapSlice(rows)
 }
 
+func (d *Database) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	return d.conn().PrepareContext(ctx, query)
+}
+
 func (d *Database) conn() *sql.DB {
 	d.mu_.RLock()
 	defer d.mu_.RUnlock()

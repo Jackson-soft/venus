@@ -5,5 +5,5 @@ const (
 	HeaderAuth = "Authorization"
 	HeaderType = "Content-Type"
 	HeaderJson = "application/json"
-	HeaderUrl  = "application/x-www-form-urlencoded"
+	HeaderForm = "application/x-www-form-urlencoded"
 )

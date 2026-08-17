@@ -42,6 +42,14 @@ func (s *Set[T]) Clear() {
 	clear(s.value_)
 }
 
+// Reset 用新的元素替换集合中的全部内容
+func (s *Set[T]) Reset(keys ...T) {
+	clear(s.value_)
+	for _, key := range keys {
+		s.value_[key] = struct{}{}
+	}
+}
+
 func (s *Set[T]) List() []T {
 	return slices.Collect(maps.Keys(s.value_))
 }

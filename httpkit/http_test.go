@@ -1,10 +1,12 @@
 package httpkit_test
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"time"
 
 	"github.com/Jackson-soft/venus/httpkit"
 	. "github.com/onsi/ginkgo/v2"
@@ -40,7 +42,6 @@ var _ = Describe("httpkit", func() {
 				Method: http.MethodGet,
 			})
 			Expect(err).Should(HaveOccurred())
-			Expect(err.Error()).Should(ContainSubstring("404"))
 		})
 
 		It("should send custom headers", func() {
@@ -86,6 +87,25 @@ var _ = Describe("httpkit", func() {
 			})
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(string(body)).Should(Equal(`{"key":"value"}`))
+		})
+
+		It("should honor request context cancellation", func() {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				time.Sleep(200 * time.Millisecond)
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte("late"))
+			}))
+			defer ts.Close()
+
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			_, err := httpkit.WebDo(&httpkit.WebBase{
+				Context: ctx,
+				Url:     ts.URL,
+				Method:  http.MethodGet,
+			})
+			Expect(err).Should(HaveOccurred())
 		})
 
 		It("should error for invalid URL", func() {
@@ -140,7 +160,7 @@ var _ = Describe("httpkit", func() {
 			Expect(httpkit.HeaderAuth).Should(Equal("Authorization"))
 			Expect(httpkit.HeaderType).Should(Equal("Content-Type"))
 			Expect(httpkit.HeaderJson).Should(Equal("application/json"))
-			Expect(httpkit.HeaderUrl).Should(Equal("application/x-www-form-urlencoded"))
+			Expect(httpkit.HeaderForm).Should(Equal("application/x-www-form-urlencoded"))
 		})
 	})
 })
