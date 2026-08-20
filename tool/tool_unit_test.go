@@ -128,6 +128,87 @@ var _ = Describe("Unique", func() {
 	})
 })
 
+type person struct {
+	ID   int
+	Name string
+}
+
+var _ = Describe("UniqueFunc", func() {
+	It("should remove duplicates using custom equal function by field", func() {
+		items := []person{
+			{ID: 1, Name: "alice"},
+			{ID: 2, Name: "bob"},
+			{ID: 1, Name: "alice2"},
+		}
+		result := tool.UniqueFunc(items, func(a, b person) bool { return a.ID == b.ID })
+		Expect(result).Should(HaveLen(2))
+		Expect(result[0].ID).Should(Equal(1))
+		Expect(result[1].ID).Should(Equal(2))
+	})
+
+	It("should preserve order", func() {
+		items := []person{
+			{ID: 3, Name: "c"},
+			{ID: 1, Name: "a"},
+			{ID: 3, Name: "c2"},
+			{ID: 2, Name: "b"},
+		}
+		result := tool.UniqueFunc(items, func(a, b person) bool { return a.ID == b.ID })
+		Expect(result).Should(Equal([]person{
+			{ID: 3, Name: "c"},
+			{ID: 1, Name: "a"},
+			{ID: 2, Name: "b"},
+		}))
+	})
+
+	It("should handle empty slice", func() {
+		result := tool.UniqueFunc([]person{}, func(a, b person) bool { return a.ID == b.ID })
+		Expect(result).Should(BeEmpty())
+	})
+
+	It("should work with comparable types too", func() {
+		result := tool.UniqueFunc([]int{1, 2, 2, 3}, func(a, b int) bool { return a == b })
+		Expect(result).Should(Equal([]int{1, 2, 3}))
+	})
+})
+
+var _ = Describe("UniqueBy", func() {
+	It("should remove duplicates by key preserving order", func() {
+		items := []person{
+			{ID: 1, Name: "alice"},
+			{ID: 2, Name: "bob"},
+			{ID: 1, Name: "alice2"},
+		}
+		result := tool.UniqueBy(items, func(p person) int { return p.ID })
+		Expect(result).Should(Equal([]person{
+			{ID: 1, Name: "alice"},
+			{ID: 2, Name: "bob"},
+		}))
+	})
+
+	It("should work with string keys", func() {
+		items := []person{
+			{ID: 1, Name: "alice"},
+			{ID: 2, Name: "alice"},
+			{ID: 3, Name: "bob"},
+		}
+		result := tool.UniqueBy(items, func(p person) string { return p.Name })
+		Expect(result).Should(HaveLen(2))
+		Expect(result[0].Name).Should(Equal("alice"))
+		Expect(result[1].Name).Should(Equal("bob"))
+	})
+
+	It("should handle empty slice", func() {
+		result := tool.UniqueBy([]person{}, func(p person) int { return p.ID })
+		Expect(result).Should(BeEmpty())
+	})
+
+	It("should work with comparable types", func() {
+		result := tool.UniqueBy([]int{1, 2, 2, 3, 1}, func(v int) int { return v })
+		Expect(result).Should(Equal([]int{1, 2, 3}))
+	})
+})
+
 var _ = Describe("RemoveElements", func() {
 	It("should return source when toRemove is empty", func() {
 		Expect(tool.RemoveElements([]int{1, 2, 3}, []int{})).Should(Equal([]int{1, 2, 3}))
