@@ -5,8 +5,7 @@ import (
 	"errors"
 	"sync"
 	"time"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 var (
@@ -95,11 +94,6 @@ func (t *Timer) Register(tType TimerType, delay time.Duration, handler func(args
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
-	uid, err := uuid.NewV7()
-	if err != nil {
-		return "", err
-	}
-
 	pos, circle := t.getPositionAndCircle(delay)
 
 	node := new(Node)
@@ -110,7 +104,7 @@ func (t *Timer) Register(tType TimerType, delay time.Duration, handler func(args
 	node.args = args
 	node.delay = delay
 
-	node.id = uid.String()
+	node.id = uuid.NewV7().String()
 
 	t.timeWheel.slots[pos].PushBack(node)
 
