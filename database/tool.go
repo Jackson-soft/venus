@@ -25,83 +25,101 @@ func Rebind(query string) string {
 	return b.String()
 }
 
-func rowMap(rows *sql.Rows) (map[string]any, error) {
-	defer rows.Close()
+// rowScanner 封装一次查询的列名与扫描缓冲区，供 rowMap 与 rowMapSlice 复用。
+type rowScanner struct {
+	cols []string
+	vals []any
+	ptrs []any
+}
 
+// newRowScanner 读取列名并初始化扫描缓冲区。
+func newRowScanner(rows *sql.Rows) (*rowScanner, error) {
 	cols, err := rows.Columns()
 	if err != nil {
 		return nil, err
 	}
 
-	values := make([]any, len(cols))
+	vals := make([]any, len(cols))
 	ptrs := make([]any, len(cols))
-
-	for i := range values {
-		ptrs[i] = &values[i]
+	for i := range vals {
+		ptrs[i] = &vals[i]
 	}
 
-	result := make(map[string]any, len(cols))
+	return &rowScanner{cols: cols, vals: vals, ptrs: ptrs}, nil
+}
 
-	if rows.Next() {
-		err = rows.Scan(ptrs...)
-		if err != nil {
+// scan 扫描当前行，并将其转换为以列名为键的 map。
+func (r *rowScanner) scan(rows *sql.Rows) (map[string]any, error) {
+	if err := rows.Scan(r.ptrs...); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]any, len(r.cols))
+	for i, key := range r.cols {
+		result[key] = cellValue(r.vals[i])
+	}
+
+	return result, nil
+}
+
+// cellValue 将 SQL 扫描得到的 []byte 转为 string；其余类型（含 NULL 的 nil）原样返回。
+func cellValue(v any) any {
+	if b, ok := v.([]byte); ok {
+		return string(b)
+	}
+
+	return v
+}
+
+// rowMap 读取单行结果并返回以列名为键的 map；无匹配行时返回空 map。
+func rowMap(rows *sql.Rows) (map[string]any, error) {
+	defer rows.Close()
+
+	scanner, err := newRowScanner(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
 			return nil, err
 		}
 
-		for ii, key := range cols {
-			if b, ok := values[ii].([]byte); ok {
-				result[key] = string(b)
-			} else {
-				result[key] = values[ii]
-			}
-		}
+		return map[string]any{}, nil
 	}
 
-	err = rows.Err()
+	result, err := scanner.scan(rows)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
 	return result, nil
 }
 
+// rowMapSlice 读取多行结果并返回以列名为键的 map 切片。
 func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 	defer rows.Close()
 
-	cols, err := rows.Columns()
+	scanner, err := newRowScanner(rows)
 	if err != nil {
 		return nil, err
 	}
 
-	values := make([]any, len(cols))
-
 	var results []map[string]any
-
-	ptrs := make([]any, len(cols))
-	for i := range values {
-		ptrs[i] = &values[i]
-	}
-
 	for rows.Next() {
-		err = rows.Scan(ptrs...)
+		result, err := scanner.scan(rows)
 		if err != nil {
 			return nil, err
-		}
-
-		result := make(map[string]any, len(cols))
-		for ii, key := range cols {
-			if b, ok := values[ii].([]byte); ok {
-				result[key] = string(b)
-			} else {
-				result[key] = values[ii]
-			}
 		}
 
 		results = append(results, result)
 	}
 
-	err = rows.Err()
-	if err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
