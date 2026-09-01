@@ -25,6 +25,24 @@ func Rebind(query string) string {
 	return b.String()
 }
 
+func StmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
+	rows, err := stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return rowMapSlice(rows)
+}
+
+func StmtMapCtx(ctx context.Context, stmt *sql.Stmt, args ...any) (map[string]any, error) {
+	rows, err := stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return rowMap(rows)
+}
+
 // rowScanner 封装一次查询的列名与扫描缓冲区，供 rowMap 与 rowMapSlice 复用。
 type rowScanner struct {
 	cols []string
@@ -41,6 +59,7 @@ func newRowScanner(rows *sql.Rows) (*rowScanner, error) {
 
 	vals := make([]any, len(cols))
 	ptrs := make([]any, len(cols))
+
 	for i := range vals {
 		ptrs[i] = &vals[i]
 	}
@@ -50,7 +69,8 @@ func newRowScanner(rows *sql.Rows) (*rowScanner, error) {
 
 // scan 扫描当前行，并将其转换为以列名为键的 map。
 func (r *rowScanner) scan(rows *sql.Rows) (map[string]any, error) {
-	if err := rows.Scan(r.ptrs...); err != nil {
+	err := rows.Scan(r.ptrs...)
+	if err != nil {
 		return nil, err
 	}
 
@@ -71,7 +91,7 @@ func cellValue(v any) any {
 	return v
 }
 
-// rowMap 读取单行结果并返回以列名为键的 map；无匹配行时返回空 map。
+// rowMap 读取单行结果并返回以列名为键的 map；无匹配行时返回 nil, nil。
 func rowMap(rows *sql.Rows) (map[string]any, error) {
 	defer rows.Close()
 
@@ -81,11 +101,12 @@ func rowMap(rows *sql.Rows) (map[string]any, error) {
 	}
 
 	if !rows.Next() {
-		if err := rows.Err(); err != nil {
+		err = rows.Err()
+		if err != nil {
 			return nil, err
 		}
 
-		return map[string]any{}, nil
+		return nil, nil
 	}
 
 	result, err := scanner.scan(rows)
@@ -93,7 +114,8 @@ func rowMap(rows *sql.Rows) (map[string]any, error) {
 		return nil, err
 	}
 
-	if err := rows.Err(); err != nil {
+	err = rows.Err()
+	if err != nil {
 		return nil, err
 	}
 
@@ -110,8 +132,11 @@ func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 	}
 
 	var results []map[string]any
+
 	for rows.Next() {
-		result, err := scanner.scan(rows)
+		var result map[string]any
+
+		result, err = scanner.scan(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -119,18 +144,10 @@ func rowMapSlice(rows *sql.Rows) ([]map[string]any, error) {
 		results = append(results, result)
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return results, nil
-}
-
-func stmtMapSliceCtx(ctx context.Context, stmt *sql.Stmt, args ...any) ([]map[string]any, error) {
-	rows, err := stmt.QueryContext(ctx, args...)
+	err = rows.Err()
 	if err != nil {
 		return nil, err
 	}
 
-	return rowMapSlice(rows)
+	return results, nil
 }

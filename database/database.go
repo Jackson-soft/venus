@@ -3,16 +3,18 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"sync"
 )
 
 // 标准库的数据库简单封装
 
 type Database struct {
-	mu_   sync.RWMutex
-	conn_ *sql.DB
-	name_ string
-	dsn_  string
+	mutex_  sync.RWMutex
+	conn_   *sql.DB
+	name_   string
+	dsn_    string
+	closed_ bool
 }
 
 func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
@@ -22,9 +24,11 @@ func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
 	}
 
 	database := &Database{
-		conn_: conn,
-		name_: driverName,
-		dsn_:  dsn,
+		mutex_:  sync.RWMutex{},
+		conn_:   conn,
+		name_:   driverName,
+		dsn_:    dsn,
+		closed_: false,
 	}
 
 	for _, op := range ops {
@@ -34,12 +38,25 @@ func OpenDB(driverName, dsn string, ops ...Option) (*Database, error) {
 	return database, nil
 }
 
-func NewDB(driverName string, db *sql.DB) *Database {
-	client := new(Database)
-	client.conn_ = db
-	client.name_ = driverName
+// NewDB 使用已存在的 *sql.DB 构造 Database，并可选地应用连接池 Option。
+// 传入 nil 的 db 会 panic。
+func NewDB(driverName string, db *sql.DB, ops ...Option) (*Database, error) {
+	if db == nil {
+		return nil, errors.New("database: NewDB: nil *sql.DB")
+	}
 
-	return client
+	database := &Database{
+		mutex_:  sync.RWMutex{},
+		conn_:   db,
+		name_:   driverName,
+		closed_: false,
+	}
+
+	for _, op := range ops {
+		op(database)
+	}
+
+	return database, nil
 }
 
 func (d *Database) Ping(ctx context.Context) error {
@@ -47,23 +64,40 @@ func (d *Database) Ping(ctx context.Context) error {
 }
 
 func (d *Database) Close() error {
-	return d.conn().Close()
+	d.mutex_.Lock()
+	if d.closed_ {
+		d.mutex_.Unlock()
+
+		return nil
+	}
+
+	d.closed_ = true
+	conn := d.conn_
+	d.mutex_.Unlock()
+
+	return conn.Close()
 }
 
 func (d *Database) Client() *sql.DB {
 	return d.conn()
 }
 
-func (d *Database) Reset(db *sql.DB, dsn string) {
+// Reset 将内部连接替换为新连接，并复位关闭状态。
+// 返回旧连接，由调用方决定何时关闭；不要在仍有 goroutine 使用时关闭旧连接。
+func (d *Database) Reset(db *sql.DB, dsn string) *sql.DB {
 	if db == nil {
-		return
+		return nil
 	}
 
-	d.mu_.Lock()
-	defer d.mu_.Unlock()
+	d.mutex_.Lock()
+	defer d.mutex_.Unlock()
 
+	old := d.conn_
 	d.conn_ = db
 	d.dsn_ = dsn
+	d.closed_ = false
+
+	return old
 }
 
 func (d *Database) InsertContext(ctx context.Context, query string, args ...any) (int64, error) {
@@ -107,8 +141,8 @@ func (d *Database) PrepareContext(ctx context.Context, query string) (*sql.Stmt,
 }
 
 func (d *Database) conn() *sql.DB {
-	d.mu_.RLock()
-	defer d.mu_.RUnlock()
+	d.mutex_.RLock()
+	defer d.mutex_.RUnlock()
 
 	return d.conn_
 }
