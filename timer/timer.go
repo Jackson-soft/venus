@@ -47,8 +47,8 @@ type (
 )
 
 const (
-	Single     TimerType = 1 //单次
-	Repetition TimerType = 2 //循环
+	Single     TimerType = 1 // 单次
+	Repetition TimerType = 2 // 循环
 
 	defaultTick = time.Second
 	defaultNum  = 5

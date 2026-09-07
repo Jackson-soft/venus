@@ -131,5 +131,6 @@ func (e *EventBus) consumer(task *Task) {
 		recover()
 		e.taskPool_.Put(task)
 	}()
+
 	task.Handler.Call(task.Params)
 }

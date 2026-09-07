@@ -17,7 +17,7 @@ const (
 	WarnLevel
 	ErrorLevel
 	FatalLevel
-	NULLLevel //非法等级
+	NULLLevel // 非法等级
 )
 
 var (
